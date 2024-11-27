@@ -1,0 +1,73 @@
+{% extends "template.html" %}
+{% block content %}
+<!-- Header Area -->
+		<header class="header" >
+			<!-- Topbar -->
+			<div class="topbar">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-6 col-md-5 col-12">
+							<div class="text">
+								<h5>Schedule a New Appointment</h5>
+							</div>
+						</div>
+						<div class="col-lg-6 col-md-7 col-12">
+							<!-- Top Contact -->
+							<ul class="top-contact">
+								<li><i class="fa fa-phone"></i>+880 1234 56789</li>
+								<li><i class="fa fa-envelope"></i><a href="mailto:support@medicaloffice.com">support@medicaloffice.com</a></li>
+							</ul>
+							<!-- End Top Contact -->
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- End Topbar -->
+			<!-- Header Inner -->
+			<div class="header-inner">
+				<div class="container">
+					<div class="inner">
+						<div class="row">
+							<div class="col-lg-3 col-md-3 col-12">
+								<!-- Start Logo -->
+								<div class="logo">
+									<a href="#"><img src="../static/img/logo.png" alt="#"></a>
+								</div>
+								<!-- End Logo -->
+								<!-- Mobile Nav -->
+								<div class="mobile-nav"></div>
+								<!-- End Mobile Nav -->
+							</div>
+							<div class="col-lg-7 col-md-9 col-12">
+								<!-- Main Menu -->
+								<div class="main-menu">
+									<nav class="navigation">
+										<ul class="nav menu">
+											<li><a href="{{ url_for('appointments') }}">Appointments</i></a></li>
+										</ul>
+									</nav>
+								</div>
+								<!--/ End Main Menu -->
+							</div>
+							<div class="col-lg-2 col-12">
+								<div class="get-quote">
+									<a href="{{ url_for('index') }}" class="btn">Log Out</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--/ End Header Inner -->
+		</header>
+		<!-- End Header Area -->
+<form method="POST">
+    {{ form.hidden_tag() }}
+    {{ form.patient_name.label }} {{ form.patient_name() }}<br>
+    {{ form.patient_email.label }} {{ form.patient_email() }}<br>
+    {{ form.patient_phone.label }} {{ form.patient_phone() }}<br>
+    {{ form.doctor.label }} {{ form.doctor() }}<br>
+    {{ form.date.label }} {{ form.date() }}<br>
+    {{ form.submit() }}
+</form>
+{% endblock %}
