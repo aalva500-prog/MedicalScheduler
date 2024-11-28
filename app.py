@@ -41,8 +41,12 @@ def contact():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('patient_dashboard.html', name=current_user.userName)
-
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+    return render_template('patient_dashboard.html', userName=current_user.userName, idNumber=person.idNumber,
+                           lastName=person.lastName, firstName=person.firstName, gender=person.gender, dob=person.dateOfBirth,
+                           address=person.address, phone=person.phone, email=person.email, weight=patient.weight, height=patient.height,
+                           bloodType = patient.bloodType)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -61,7 +65,6 @@ def login():
             flash('Invalid username or password!', 'danger')
 
     return render_template('login.html', form=form)
-
 
 @app.route('/logout')
 @login_required
@@ -117,7 +120,7 @@ def new_patient():
             dateOfBirth = form.birthday.data,
             address = form.address.data,
             phone = form.phone_number.data,
-            email = form.email.data
+            email = form.email.data.lower()
         )
         db.session.add(person)
         db.session.commit()
@@ -133,7 +136,7 @@ def new_patient():
         db.session.commit()
 
         flash("Patient Added successfully!", "success")
-        return redirect(url_for('patients'))
+        return redirect(url_for('login'))
 
     return render_template('new_patient.html', form=form)
 

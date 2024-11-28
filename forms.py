@@ -17,25 +17,25 @@ class AppointmentForm(FlaskForm):
     submit = SubmitField("Schedule Appointment")
 
 class PatientForm(FlaskForm):
-    id_number = StringField("License Number", validators=[DataRequired()])
-    first_name = StringField("First Name", validators=[DataRequired()])
-    last_name = StringField("Last Name", validators=[DataRequired()])
-    username = StringField("Username", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    genders = [("male", "Male"), ("female", "Female")]
+    id_number = StringField("License Number", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    first_name = StringField("First Name", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    last_name = StringField("Last Name", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    username = StringField("Username", render_kw={"autocapitalize": "off", "placeholder": "Enter your username"} , validators=[DataRequired()])
+    password = PasswordField("Password", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    genders = [("Male", "Male"), ("Female", "Female")]
     gender = SelectField("Gender", validators=[DataRequired()], choices=genders)
-    birthday = DateField('Birthday', format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
-    address = StringField("Address", validators=[DataRequired()])
-    phone_number = StringField("Phone Number", validators=[DataRequired()])
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    weight = FloatField("Weight (lb)", validators=[DataRequired()])
-    height = FloatField("Height (cm)", validators=[DataRequired()])
-    bloods = [("a", "A"),("b", "B"),("ab", "AB"),("o", "O")]
+    birthday = DateField('Birthday', render_kw={"autocapitalize": "off"}, format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
+    address = StringField("Address", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    phone_number = StringField("Phone Number", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    email = StringField("Email", render_kw={"autocapitalize": "off"}, validators=[DataRequired(), Email()])
+    weight = FloatField("Weight (lb)", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    height = FloatField("Height (cm)", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    bloods = [("A+", "A+"), ("A-", "A-"), ("B+", "B+"),("B-", "B-"),("AB+", "AB+"),("AB-", "AB-"),("O+", "O+"),("O-", "O-")]
     blood = SelectField("Blood Type", validators=[DataRequired()], choices=bloods)
     submit = SubmitField("Add Patient")
 
 class LoginForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
+    username = StringField("Username", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
+    password = PasswordField("Password", render_kw={"autocapitalize": "off"}, validators=[DataRequired()])
     submit = SubmitField("Login")
 
