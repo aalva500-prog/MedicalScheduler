@@ -47,10 +47,15 @@
 											<li><a href="#">Patients</a>
 												<ul class="dropdown">
 													<li><a href="{{ url_for('new_patient') }}">New Patient Registration</a></li>
-													<li><a href="#">Returning Patient</a></li>
+													<li><a href="{{ url_for('login')}}">Returning Patient</a></li>
 												</ul>
 											</li>
-											<li><a href="#">Providers</a></li>
+											<li><a href="#">Providers</a>
+												<ul class="dropdown">
+													<li><a href="{{ url_for('patients') }}">Patient List</a></li>
+													<li><a href="{{ url_for('appointments') }}">Appointments</a></li>
+												</ul>
+											</li>
 											<li><a href="#">Office Staff</a></li>
 											<li><a href="#">Administrators</a></li>
 										</ul>

@@ -34,3 +34,8 @@ class PatientForm(FlaskForm):
     blood = SelectField("Blood Type", validators=[DataRequired()], choices=bloods)
     submit = SubmitField("Add Patient")
 
+class LoginForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Login")
+

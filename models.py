@@ -1,5 +1,6 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 db = SQLAlchemy()
 
@@ -10,12 +11,12 @@ class MedicalOffice(db.Model):
     phone = db.Column(db.String(20), nullable=False)
     faxNumber = db.Column(db.String(20), nullable=False)
 
-class Person(db.Model):
-    personID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+class Person(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     idNumber = db.Column(db.String(20), nullable=False, unique=True)
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
-    userName = db.Column(db.String(50), nullable=False)
+    userName = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(50), nullable=False)
     gender = db.Column(db.String(50), nullable=False)
     dateOfBirth = db.Column(db.String, nullable=False)
@@ -29,22 +30,22 @@ class Patient(db.Model):
     height = db.Column(db.Float, nullable=False)
     bloodType = db.Column(db.String(5), nullable=False)
     isActive = db.Column(db.Boolean, nullable=False)
-    personID = db.Column(db.Integer, db.ForeignKey('person.personID'), nullable=False)
+    personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
     person = db.relationship('Person', backref='patients')
 
 class Doctor(db.Model):
     doctorID = db.Column(db.Integer, primary_key=True)
     licenseNumber = db.Column(db.String(50), nullable=False)
     specialization = db.Column(db.String(50), nullable=False)
-    personID = db.Column(db.Integer, db.ForeignKey('person.personID'), nullable=False)
+    personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
 
 class OfficeManager(db.Model):
     managerID = db.Column(db.Integer, primary_key=True)
-    personID = db.Column(db.Integer, db.ForeignKey('person.personID'), nullable=False)
+    personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
 
 class StaffMember(db.Model):
     staffID = db.Column(db.Integer, primary_key=True)
-    personID = db.Column(db.Integer, db.ForeignKey('person.personID'), nullable=False)
+    personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
 
 class Appointment(db.Model):
     appointmentID = db.Column(db.Integer, primary_key=True)

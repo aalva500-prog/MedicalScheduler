@@ -8,7 +8,7 @@
 					<div class="row">
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
-								<h5>Patient List</h5>
+								<h5>Patient Dashboard</h5>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -42,14 +42,13 @@
 								<!-- Main Menu -->
 								<div class="main-menu">
 									<nav class="navigation">
-										<ul class="nav menu">patients.html</ul>
+										<ul class="nav menu"></ul>
 									</nav>
 								</div>
 								<!--/ End Main Menu -->
 							</div>
 							<div class="col-lg-2 col-12">
 								<div class="get-quote">
-									<a href="{{ url_for('index') }}" class="btn">Log Out</a>
 								</div>
 							</div>
 						</div>
@@ -62,40 +61,9 @@
 	<section class="contact-us section">
 		<div class="container">
 			<div class="inner">
-				<table>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>First Name</th>
-							<th>Last Name</th>
-							<th>Gender</th>
-							<th>DOB</th>
-							<th>Phone</th>
-							<th>Email</th>
-							<th>Weight (lb)</th>
-							<th>Height (cm)</th>
-							<th>Blood Type</th>
-							<th>Username</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for patient in patients %}
-						<tr>
-							<td>{{patient.person.idNumber}}</td>
-							<td>{{patient.person.firstName}}</td>
-							<td>{{patient.person.lastName}}</td>
-							<td>{{patient.person.gender}}</td>
-							<td>{{patient.person.dateOfBirth}}</td>
-							<td>{{patient.person.phone}}</td>
-							<td>{{patient.person.email}}</td>
-							<td>{{ patient.weight }}</td>
-							<td>{{ patient.height }}</td>
-							<td>{{ patient.bloodType }}</td>
-							<td>{{ patient.person.userName }}</td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>
+				 <h1>Welcome, {{ name }}!</h1>
+				 <p>You are logged in.</p>
+				 <a href="{{ url_for('logout') }}">Logout</a>
 			</div>
 		</div>
 	</section>

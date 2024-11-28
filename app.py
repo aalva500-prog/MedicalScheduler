@@ -1,19 +1,24 @@
 # app.py
-from flask import Flask, render_template, redirect, url_for, flash
+from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
 from models import db, MedicalOffice, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment, Schedule
-from forms import AppointmentForm, PatientForm
-from datetime import datetime
+from forms import AppointmentForm, PatientForm, LoginForm
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
+@login_manager.user_loader
+def load_user(personID):
+    return Person.query.get(int(personID))
 
 @app.before_request
 def create_tables():
     db.create_all()
-
 
 @app.route('/')
 def index():
@@ -29,14 +34,43 @@ def patients():
     all_patients = Patient.query.all()
     return render_template('patients.html', patients=all_patients)
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
-
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('patient_dashboard.html', name=current_user.userName)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        userName = form.username.data
+        password = form.password.data
+
+        user = Person.query.filter_by(userName=userName).first()
+        if user and user.password == password:
+            login_user(user)  # Create session for the user
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid username or password!', 'danger')
+
+    return render_template('login.html', form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
+
+@login_required
 @app.route('/new_appointment', methods=['GET', 'POST'])
 def new_appointment():
     form = AppointmentForm()
@@ -93,7 +127,7 @@ def new_patient():
             height = form.height.data,
             bloodType = form.blood.data,
             isActive = True,
-            personID = person.personID
+            personID = person.id
         )
         db.session.add(patient)
         db.session.commit()
