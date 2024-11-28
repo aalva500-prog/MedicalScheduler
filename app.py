@@ -111,14 +111,14 @@ def new_patient():
     if form.validate_on_submit():
 
         person = Person(
-            idNumber = form.id_number.data,
+            idNumber = form.id_number.data.upper(),
             firstName = form.first_name.data,
             lastName = form.last_name.data,
-            userName = form.username.data,
+            userName = form.username.data.lower(),
             password = form.password.data,
             gender = form.gender.data,
             dateOfBirth = form.birthday.data,
-            address = form.address.data,
+            address = form.address.data.lower(),
             phone = form.phone_number.data,
             email = form.email.data.lower()
         )
