@@ -38,6 +38,7 @@ class Doctor(db.Model):
     licenseNumber = db.Column(db.String(50), nullable=False)
     specialization = db.Column(db.String(50), nullable=False)
     personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
+    person = db.relationship('Person', backref='doctors')
 
 class OfficeManager(db.Model):
     managerID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -47,6 +48,7 @@ class OfficeManager(db.Model):
 class StaffMember(db.Model):
     staffID = db.Column(db.Integer, primary_key=True)
     personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
+    person = db.relationship('Person', backref='staffmembers')
 
 class Appointment(db.Model):
     appointmentID = db.Column(db.Integer, primary_key=True, autoincrement=True)

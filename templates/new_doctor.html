@@ -9,6 +9,7 @@
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
 								<h5>Office Manager Dashboard</h5>
+								<p>Logged in as: {{ name }}</p>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -96,37 +97,93 @@
 			<!--/ End Header Inner -->
 		</header>
 		<!-- End Header Area -->
-	<section class="contact-us section">
-		<div class="container">
-			<div class="inner">
-				 <h3>Welcome, {{ userName }}!</h3>
-				 <p>You are logged in.</p>
-				<br>
-				<br>
-				<table>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>First Name</th>
-							<th>Last Name</th>
-							<th>Gender</th>
-							<th>DOB</th>
-							<th>Phone</th>
-							<th>Email</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>{{ idNumber }}</td>
-							<td>{{ firstName }}</td>
-							<td>{{ lastName }}</td>
-							<td>{{ gender }}</td>
-							<td>{{ dob }}</td>
-							<td>{{ phone }}</td>
-							<td>{{ email }}</td>
-					</tbody>
-				</table>
+<!-- Start Add Patient -->
+		<section class="contact-us section">
+			<div class="container">
+				<div class="inner">
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="contact-us-form">
+								<h2>New Doctor Details</h2>
+								<p>Please enter the information below.</p>
+								<!-- Form -->
+								<form class="form" method="POST">
+										{{ form.hidden_tag() }}
+										<div class="row">
+											<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.id_number.label }} {{ form.id_number() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.first_name.label }} {{ form.first_name() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.last_name.label }} {{ form.last_name() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.birthday.label }} {{ form.birthday() }}
+													</div>
+												</div>
+												<div class="col-lg-12">
+													<div class="form-group">
+														{{ form.address.label }} {{ form.address() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.phone_number.label }} {{ form.phone_number() }}
+													</div>
+												</div>
+												<div class="col-lg-10">
+													<div class="form-group">
+														{{ form.email.label }} {{ form.email() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.license.label }} {{ form.license() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.specialty.label }} {{ form.specialty() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.gender.label }} {{ form.gender() }}
+													</div>
+												</div>
+												<div class="col-lg-7">
+													<div class="form-group">
+														{{ form.username.label }} {{ form.username() }}
+													</div>
+												</div>
+												<div class="col-lg-7">
+													<div class="form-group">
+														{{ form.password.label }} {{ form.password() }}
+													</div>
+												</div>
+												<div class="col-12">
+													<div class="form-group login-btn">
+														{{ form.submit() }}
+													</div>
+												</div>
+										</div>
+										</form>
+							</div>
+								<!--/ End Form -->
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
-	</section>
+		</section>
+		<!--End Add Patient -->
+
 {% endblock %}

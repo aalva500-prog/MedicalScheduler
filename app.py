@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
 from models import db, MedicalOffice, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment, Schedule
-from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm
+from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 app = Flask(__name__)
@@ -25,19 +25,28 @@ def index():
     return render_template('index.html')
 
 @app.route('/appointments')
+@login_required
 def appointments():
     all_appointments = Appointment.query.all()
     return render_template('appointments.html', appointments=all_appointments)
 
 @app.route('/patients')
+@login_required
 def patients():
     all_patients = Patient.query.all()
-    return render_template('patients.html', patients=all_patients)
+    return render_template('patients.html', patients=all_patients, userName=current_user.userName)
+
+@app.route('/doctors')
+@login_required
+def doctors():
+    all_doctors = Doctor.query.all()
+    return render_template('doctors.html', doctors=all_doctors, userName=current_user.userName)
 
 @app.route('/officeManagers')
+@login_required
 def officeManagers():
     all_managers = OfficeManager.query.all()
-    return render_template('officeManagers.html', managers=all_managers)
+    return render_template('officeManagers.html', managers=all_managers, name=current_user.userName)
 
 
 @app.route('/contact')
@@ -71,7 +80,8 @@ def login():
         password = form.password.data
 
         user = Person.query.filter_by(userName=userName).first()
-        if user and user.password == password:
+        patient = Patient.query.filter_by(personID=user.id).first()
+        if patient and user.password == password:
             login_user(user)  # Create session for the user
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
@@ -89,7 +99,8 @@ def login_manager():
         password = form.password.data
 
         user = Person.query.filter_by(userName=userName).first()
-        if user and user.password == password:
+        manager = OfficeManager.query.filter_by(personID=user.id).first()
+        if manager and user.password == password:
             login_user(user)  # Create session for the user
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard_managers'))
@@ -172,7 +183,45 @@ def new_patient():
 
     return render_template('new_patient.html', form=form)
 
+@app.route('/new_patient_manager', methods=['GET', 'POST'])
+@login_required
+def new_patient_manager():
+    form = PatientForm()
+
+    if form.validate_on_submit():
+
+        person = Person(
+            idNumber = form.id_number.data.upper(),
+            firstName = form.first_name.data,
+            lastName = form.last_name.data,
+            userName = form.username.data.lower(),
+            password = form.password.data,
+            gender = form.gender.data,
+            dateOfBirth = form.birthday.data,
+            address = form.address.data.lower(),
+            phone = form.phone_number.data,
+            email = form.email.data.lower()
+        )
+        db.session.add(person)
+        db.session.commit()
+
+        patient = Patient(
+            weight = form.weight.data,
+            height = form.height.data,
+            bloodType = form.blood.data,
+            isActive = True,
+            personID = person.id
+        )
+        db.session.add(patient)
+        db.session.commit()
+
+        flash("Patient Added successfully!", "success")
+        return redirect(url_for('dashboard_managers'))
+
+    return render_template('new_patient_manager.html', form=form, name=current_user.userName)
+
 @app.route('/add_officeManager', methods=['GET', 'POST'])
+@login_required
 def add_officeManager():
     form = OfficeManagerForm()
 
@@ -200,9 +249,44 @@ def add_officeManager():
         db.session.commit()
 
         flash("OfficeManager Added successfully!", "success")
-        return redirect(url_for('officeManagers'))
+        return redirect(url_for('dashboard_managers'))
 
-    return render_template('add_officeManager.html', form=form)
+    return render_template('add_officeManager.html', form=form, name=current_user.userName)
+
+@app.route('/add_doctor', methods=['GET', 'POST'])
+@login_required
+def add_doctor():
+    form = DoctorForm()
+
+    if form.validate_on_submit():
+
+        person = Person(
+            idNumber = form.id_number.data.upper(),
+            firstName = form.first_name.data,
+            lastName = form.last_name.data,
+            userName = form.username.data.lower(),
+            password = form.password.data,
+            gender = form.gender.data,
+            dateOfBirth = form.birthday.data,
+            address = form.address.data.lower(),
+            phone = form.phone_number.data,
+            email = form.email.data.lower()
+        )
+        db.session.add(person)
+        db.session.commit()
+
+        doctor = Doctor(
+            personID = person.id,
+            licenseNumber = form.license.data,
+            specialization = form.specialty.data
+        )
+        db.session.add(doctor)
+        db.session.commit()
+
+        flash("Doctor Added successfully!", "success")
+        return redirect(url_for('dashboard_managers'))
+
+    return render_template('new_doctor.html', form=form, name=current_user.userName)
 
 if __name__ == '__main__':
     app.run(debug=True)

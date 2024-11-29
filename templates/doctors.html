@@ -9,6 +9,7 @@
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
 								<h5>Office Manager Dashboard</h5>
+								<p>Logged in as: {{ userName }}</p>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -99,10 +100,7 @@
 	<section class="contact-us section">
 		<div class="container">
 			<div class="inner">
-				 <h3>Welcome, {{ userName }}!</h3>
-				 <p>You are logged in.</p>
-				<br>
-				<br>
+				<h5>Doctor's List</h5>
 				<table>
 					<thead>
 						<tr>
@@ -113,17 +111,24 @@
 							<th>DOB</th>
 							<th>Phone</th>
 							<th>Email</th>
+							<th>Doctor's License (lb)</th>
+							<th>Specialty</th>
 						</tr>
 					</thead>
 					<tbody>
+						{% for doctor in doctors %}
 						<tr>
-							<td>{{ idNumber }}</td>
-							<td>{{ firstName }}</td>
-							<td>{{ lastName }}</td>
-							<td>{{ gender }}</td>
-							<td>{{ dob }}</td>
-							<td>{{ phone }}</td>
-							<td>{{ email }}</td>
+							<td>{{doctor.person.idNumber}}</td>
+							<td>{{doctor.person.firstName}}</td>
+							<td>{{doctor.person.lastName}}</td>
+							<td>{{doctor.person.gender}}</td>
+							<td>{{doctor.person.dateOfBirth}}</td>
+							<td>{{doctor.person.phone}}</td>
+							<td>{{doctor.person.email}}</td>
+							<td>{{ doctor.licenseNumber }}</td>
+							<td>{{ doctor.specialization }}</td>
+						</tr>
+						{% endfor %}
 					</tbody>
 				</table>
 			</div>

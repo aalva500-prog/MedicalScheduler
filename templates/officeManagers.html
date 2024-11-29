@@ -8,7 +8,8 @@
 					<div class="row">
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
-								<h5>Office Managers List</h5>
+								<h5>Office Manager Dashboard</h5>
+								<p>Logged in as: {{ name }}</p>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -42,14 +43,51 @@
 								<!-- Main Menu -->
 								<div class="main-menu">
 									<nav class="navigation">
-										<ul class="nav menu"></ul>
+										<ul class="nav menu">
+											<li><a href="{{ url_for('dashboard_managers') }}">Dashboard Home</a></li>
+											<li><a href="#">Appointments</a>
+											<ul class="dropdown">
+													<li><a href="#">Appointments List</a></li>
+													<li><a href="#">Add New Appointment </a></li>
+													<li><a href="#">Manage Appointment</a></li>
+												</ul>
+											</li>
+											<li><a href="#">Patients</a>
+											<ul class="dropdown">
+													<li><a href="{{ url_for('patients') }}">Patient List</a></li>
+													<li><a href="{{ url_for('new_patient_manager') }}">Add New Patient</a></li>
+													<li><a href="#">Update Patient Information</a></li>
+												</ul>
+											</li>
+											<li><a href="#">Doctors</a>
+												<ul class="dropdown">
+													<li><a href="{{ url_for('doctors') }}">Doctors List</a></li>
+													<li><a href="{{ url_for('add_doctor') }}">Add New Doctor</a></li>
+													<li><a href="#">Update Doctor Information</a></li>
+												</ul>
+											</li>
+											<li><a href="#">Office Clerks</a>
+												<ul class="dropdown">
+													<li><a href="#">Office Clerks List</a></li>
+													<li><a href="#">Add New Office Clerk Member</a></li>
+													<li><a href="#">Update Office Clerk Information</a></li>
+												</ul>
+											</li>
+											<li><a href="#">Office Managers</a>
+												<ul class="dropdown">
+													<li><a href="{{ url_for('officeManagers')}}">Office Managers List</a></li>
+													<li><a href="{{ url_for('add_officeManager')}}">Add New Office Managers</a></li>
+													<li><a href="#">Update Office Manager Information</a></li>
+												</ul>
+											</li>
+										</ul>
 									</nav>
 								</div>
 								<!--/ End Main Menu -->
 							</div>
 							<div class="col-lg-2 col-12">
 								<div class="get-quote">
-									<a href="{{ url_for('index') }}" class="btn">Log Out</a>
+									<a href="{{ url_for('logout') }}" class="btn">Log Out</a>
 								</div>
 							</div>
 						</div>
@@ -62,6 +100,7 @@
 	<section class="contact-us section">
 		<div class="container">
 			<div class="inner">
+				<h5>Office Managers List</h5>
 				<table>
 					<thead>
 						<tr>
