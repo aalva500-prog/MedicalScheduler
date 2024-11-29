@@ -43,8 +43,10 @@
 								<div class="main-menu">
 									<nav class="navigation">
 										<ul class="nav menu">
-											<li><a href="#">Schedule Appointment</a></li>
-											<li><a href="#">Appointment History</a></li>
+											<li><a href="{{ url_for('dashboard') }}">Dashboard Home</a></li>
+											<li><a href="{{ url_for('new_appointment') }}">Schedule Appointment</a></li>
+											<li><a href="{{ url_for('appointmentsByPatient') }}">Appointment History</a></li>
+											<li><a href="#">Manage Appointment</a></li>
 											<li><a href="#">Modify Patient Information</a></li>
 										</ul>
 									</nav>

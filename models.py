@@ -52,8 +52,8 @@ class StaffMember(db.Model):
 
 class Appointment(db.Model):
     appointmentID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    appointmentDate = db.Column(db.DateTime, nullable=False)
-    appointmentTime = db.Column(db.String(10), nullable=False)
+    appointmentDate = db.Column(db.String, nullable=False)
+    appointmentTime = db.Column(db.Time, nullable=False)
     appointmentType = db.Column(db.String(50), nullable=False)
     patientID = db.Column(db.Integer, db.ForeignKey('patient.patientID'), nullable=False)
     doctorID = db.Column(db.Integer, db.ForeignKey('doctor.doctorID'), nullable=False)

@@ -1,17 +1,18 @@
 # forms.py
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DateTimeField, SelectField, DateField
+from wtforms.fields.datetime import TimeField
 from wtforms.fields.numeric import FloatField
 from wtforms.fields.simple import PasswordField
 from wtforms.validators import DataRequired, Email
 from wtforms.widgets import DateInput
 
 class AppointmentForm(FlaskForm):
-    patient_name = StringField("Patient Name", validators=[DataRequired()])
-    patient_email = StringField("Patient Email", validators=[DataRequired(), Email()])
-    patient_phone = StringField("Patient Phone", validators=[DataRequired()])
+    appointmentDate = DateField('Appointment Date', render_kw={"autocomplete": "off"}, format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
+    appointmentTime = TimeField("Appointment Time",  render_kw={"autocomplete": "off"}, format='%H:%M', validators=[DataRequired()])
+    types = [("New Patient Visit", "New Patient Visit"), ("Follow Up Visit", "Follow Up Visit")]
+    appointmentType = SelectField("Appointment Type", validators=[DataRequired()], choices=types)
     doctor = SelectField("Doctor", coerce=int, validators=[DataRequired()])
-    date = DateTimeField("Date and Time", validators=[DataRequired()], format='%Y-%m-%d %H:%M:%S')
     submit = SubmitField("Schedule Appointment")
 
 class PatientForm(FlaskForm):
@@ -22,7 +23,7 @@ class PatientForm(FlaskForm):
     password = PasswordField("Password", render_kw={"autocomplete": "off", "placeholder": "Enter password"}, validators=[DataRequired()])
     genders = [("Male", "Male"), ("Female", "Female")]
     gender = SelectField("Gender", validators=[DataRequired()], choices=genders)
-    birthday = DateField('Birthday', render_kw={"autocomplete": "off", "placeholder": "Enter Date of Birth"}, format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
+    birthday = DateField('Birthday', render_kw={"autocomplete": "off"}, format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
     address = StringField("Address", render_kw={"autocomplete": "off", "placeholder": "Enter Address"}, validators=[DataRequired()])
     phone_number = StringField("Phone Number", render_kw={"autocomplete": "off", "placeholder": "Enter Phone Number"}, validators=[DataRequired()])
     email = StringField("Email", render_kw={"autocomplete": "off", "placeholder": "Enter email address"}, validators=[DataRequired(), Email()])

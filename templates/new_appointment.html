@@ -8,7 +8,8 @@
 					<div class="row">
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
-								<h5>Schedule a New Appointment</h5>
+								<h5>Patient Dashboard</h5>
+								<p>Logged in as: {{ name }}</p>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -43,7 +44,19 @@
 								<div class="main-menu">
 									<nav class="navigation">
 										<ul class="nav menu">
-											<li><a href="{{ url_for('appointments') }}">Appointments</i></a></li>
+											<!-- Main Menu -->
+								<div class="main-menu">
+									<nav class="navigation">
+										<ul class="nav menu">
+											<li><a href="{{ url_for('dashboard') }}">Dashboard Home</a></li>
+											<li><a href="{{ url_for('new_appointment') }}">Schedule Appointment</a></li>
+											<li><a href="{{ url_for('appointmentsByPatient') }}">Appointment History</a></li>
+											<li><a href="#">Manage Appointment</a></li>
+											<li><a href="#">Modify Patient Information</a></li>
+										</ul>
+									</nav>
+								</div>
+								<!--/ End Main Menu -->
 										</ul>
 									</nav>
 								</div>
@@ -51,7 +64,7 @@
 							</div>
 							<div class="col-lg-2 col-12">
 								<div class="get-quote">
-									<a href="{{ url_for('index') }}" class="btn">Log Out</a>
+									<a href="{{ url_for('logout') }}" class="btn">Log Out</a>
 								</div>
 							</div>
 						</div>
@@ -61,13 +74,52 @@
 			<!--/ End Header Inner -->
 		</header>
 		<!-- End Header Area -->
-<form method="POST">
-    {{ form.hidden_tag() }}
-    {{ form.patient_name.label }} {{ form.patient_name() }}<br>
-    {{ form.patient_email.label }} {{ form.patient_email() }}<br>
-    {{ form.patient_phone.label }} {{ form.patient_phone() }}<br>
-    {{ form.doctor.label }} {{ form.doctor() }}<br>
-    {{ form.date.label }} {{ form.date() }}<br>
-    {{ form.submit() }}
-</form>
+<!-- Start Add Patient -->
+		<section class="contact-us section">
+			<div class="container">
+				<div class="inner">
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="contact-us-form">
+								<h2>New Appointment Details</h2>
+								<p>Please enter the information below.</p>
+								<!-- Form -->
+								<form class="form" method="POST">
+										{{ form.hidden_tag() }}
+										<div class="row">
+											<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.appointmentDate.label }} {{ form.appointmentDate() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.appointmentTime.label }} {{ form.appointmentTime() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.appointmentType.label }} {{ form.appointmentType() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.doctor.label }} {{ form.doctor() }}
+													</div>
+												</div>
+												<div class="col-12">
+													<div class="form-group login-btn">
+														{{ form.submit() }}
+													</div>
+												</div>
+										</div>
+										</form>
+							</div>
+								<!--/ End Form -->
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!--End Add Patient -->
 {% endblock %}

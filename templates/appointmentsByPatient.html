@@ -8,7 +8,8 @@
 					<div class="row">
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
-								<h5>Appointments</h5>
+								<h5>Patient Dashboard</h5>
+								<p>Logged in as: {{ name }}</p>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -43,7 +44,11 @@
 								<div class="main-menu">
 									<nav class="navigation">
 										<ul class="nav menu">
+											<li><a href="{{ url_for('dashboard') }}">Dashboard Home</a></li>
 											<li><a href="{{ url_for('new_appointment') }}">Schedule Appointment</a></li>
+											<li><a href="{{ url_for('appointmentsByPatient') }}">Appointment History</a></li>
+											<li><a href="#">Manage Appointment</a></li>
+											<li><a href="#">Modify Patient Information</a></li>
 										</ul>
 									</nav>
 								</div>
@@ -62,8 +67,34 @@
 		</header>
 		<!-- End Header Area -->
 <ul>
-    {% for appointment in appointments %}
-        <li>{{ appointment.date }} - {{ appointment.patient.name }} with {{ appointment.doctor.name }}</li>
-    {% endfor %}
+	<section class="contact-us section">
+		<div class="container">
+			<div class="inner">
+				<h5>Appointments History</h5>
+				<table>
+					<thead>
+						<tr>
+							<th>Appointment Date</th>
+							<th>Appointment Time</th>
+							<th>Appointment Type</th>
+							<th>Doctor</th>
+							<th>Specialty</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for appointment in appointmentsByPatient %}
+						<tr>
+							<td>{{appointment.appointmentDate}}</td>
+							<td>{{appointment.appointmentTime}}</td>
+							<td>{{appointment.appointmentType}}</td>
+							<td>{{appointment.doctor.person.firstName + " " + appointment.doctor.person.lastName}}</td>
+							<td>{{appointment.doctor.specialization}}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section>
 </ul>
 {% endblock %}

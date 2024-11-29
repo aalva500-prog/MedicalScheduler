@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
 from models import db, MedicalOffice, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment, Schedule
-from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm
+from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 app = Flask(__name__)
@@ -28,13 +28,27 @@ def index():
 @login_required
 def appointments():
     all_appointments = Appointment.query.all()
-    return render_template('appointments.html', appointments=all_appointments)
+    return render_template('appointmentsByPatient.html', appointments=all_appointments, name=current_user.userName)
+
+@app.route('/appointmentsByPatient')
+@login_required
+def appointmentsByPatient():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+    all_appointments = Appointment.query.filter_by(patientID = patient.patientID).all()
+    return render_template('appointmentsByPatient.html', appointmentsByPatient=all_appointments, name=current_user.userName)
 
 @app.route('/patients')
 @login_required
 def patients():
     all_patients = Patient.query.all()
     return render_template('patients.html', patients=all_patients, userName=current_user.userName)
+
+@app.route('/clerks')
+@login_required
+def officeClerks():
+    all_clerks = StaffMember.query.all()
+    return render_template('officeClerks.html', clerks=all_clerks, userName=current_user.userName)
 
 @app.route('/doctors')
 @login_required
@@ -120,31 +134,26 @@ def logout():
 @app.route('/new_appointment', methods=['GET', 'POST'])
 def new_appointment():
     form = AppointmentForm()
-    form.doctor.choices = [(doctor.id, doctor.name) for doctor in Doctor.query.all()]
+    form.doctor.choices = [(doctor.doctorID, doctor.person.firstName + " " + doctor.person.lastName) for doctor in Doctor.query.all()]
 
     if form.validate_on_submit():
-        patient = Patient.query.filter_by(email=form.patient_email.data).first()
-        if not patient:
-            patient = Patient(
-                name=form.patient_name.data,
-                email=form.patient_email.data,
-                phone=form.patient_phone.data
+        user = Person.query.filter_by(userName=current_user.userName).first()
+        patient = Patient.query.filter_by(personID=user.id).first()
+        if patient:
+            appointment = Appointment(
+                appointmentDate=form.appointmentDate.data,
+                appointmentTime=form.appointmentTime.data,
+                appointmentType=form.appointmentType.data,
+                patientID=patient.patientID,
+                doctorID=form.doctor.data
             )
-            db.session.add(patient)
+            db.session.add(appointment)
             db.session.commit()
 
-        appointment = Appointment(
-            date=form.date.data,
-            patient_id=patient.id,
-            doctor_id=form.doctor.data
-        )
-        db.session.add(appointment)
-        db.session.commit()
-
         flash("Appointment scheduled successfully!", "success")
-        return redirect(url_for('appointments'))
+        return redirect(url_for('dashboard'))
 
-    return render_template('new_appointment.html', form=form)
+    return render_template('new_appointment.html', form=form, name=current_user.userName)
 
 
 @app.route('/new_patient', methods=['GET', 'POST'])
@@ -252,6 +261,39 @@ def add_officeManager():
         return redirect(url_for('dashboard_managers'))
 
     return render_template('add_officeManager.html', form=form, name=current_user.userName)
+
+@app.route('/add_officeClerk', methods=['GET', 'POST'])
+@login_required
+def add_officeClerk():
+    form = OfficeClerkForm()
+
+    if form.validate_on_submit():
+
+        person = Person(
+            idNumber = form.id_number.data.upper(),
+            firstName = form.first_name.data,
+            lastName = form.last_name.data,
+            userName = form.username.data.lower(),
+            password = form.password.data,
+            gender = form.gender.data,
+            dateOfBirth = form.birthday.data,
+            address = form.address.data.lower(),
+            phone = form.phone_number.data,
+            email = form.email.data.lower()
+        )
+        db.session.add(person)
+        db.session.commit()
+
+        officeClerk = StaffMember(
+            personID = person.id
+        )
+        db.session.add(officeClerk)
+        db.session.commit()
+
+        flash("Office Clerk Added successfully!", "success")
+        return redirect(url_for('dashboard_managers'))
+
+    return render_template('add_officeClerk.html', form=form, name=current_user.userName)
 
 @app.route('/add_doctor', methods=['GET', 'POST'])
 @login_required
