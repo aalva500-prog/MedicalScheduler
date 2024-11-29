@@ -8,7 +8,7 @@
 					<div class="row">
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
-								<h5>Patient List</h5>
+								<h5>Office Managers List</h5>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -42,37 +42,7 @@
 								<!-- Main Menu -->
 								<div class="main-menu">
 									<nav class="navigation">
-										<ul class="nav menu">
-											<li><a href="{{ url_for('dashboard_managers') }}">Manager Dashboard</a></li>
-											<li><a href="#">Appointments</a>
-											<ul class="dropdown">
-													<li><a href="#">Appointments List</a></li>
-													<li><a href="#">Add New Appointment </a></li>
-													<li><a href="#}">Manage Appointment</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Patients</a>
-											<ul class="dropdown">
-													<li><a href="{{ url_for('patients') }}">Patient List</a></li>
-													<li><a href="#">Add New Patient</a></li>
-													<li><a href="#}">Update Patient Information</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Doctors</a>
-												<ul class="dropdown">
-													<li><a href="#">Doctors List</a></li>
-													<li><a href="#">Add New Doctor</a></li>
-													<li><a href="#}">Update Doctor Information</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Office Clerks</a>
-												<ul class="dropdown">
-													<li><a href="#">Office Clerks List</a></li>
-													<li><a href="#">Add New Office Clerk Member</a></li>
-													<li><a href="#}">Update Office Clerk Information</a></li>
-												</ul>
-											</li>
-										</ul>
+										<ul class="nav menu"></ul>
 									</nav>
 								</div>
 								<!--/ End Main Menu -->
@@ -102,24 +72,18 @@
 							<th>DOB</th>
 							<th>Phone</th>
 							<th>Email</th>
-							<th>Weight (lb)</th>
-							<th>Height (cm)</th>
-							<th>Blood Type</th>
 						</tr>
 					</thead>
 					<tbody>
-						{% for patient in patients %}
+						{% for manager in managers %}
 						<tr>
-							<td>{{patient.person.idNumber}}</td>
-							<td>{{patient.person.firstName}}</td>
-							<td>{{patient.person.lastName}}</td>
-							<td>{{patient.person.gender}}</td>
-							<td>{{patient.person.dateOfBirth}}</td>
-							<td>{{patient.person.phone}}</td>
-							<td>{{patient.person.email}}</td>
-							<td>{{ patient.weight }}</td>
-							<td>{{ patient.height }}</td>
-							<td>{{ patient.bloodType }}</td>
+							<td>{{manager.person.idNumber}}</td>
+							<td>{{manager.person.firstName}}</td>
+							<td>{{manager.person.lastName}}</td>
+							<td>{{manager.person.gender}}</td>
+							<td>{{manager.person.dateOfBirth}}</td>
+							<td>{{manager.person.phone}}</td>
+							<td>{{manager.person.email}}</td>
 						</tr>
 						{% endfor %}
 					</tbody>

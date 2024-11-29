@@ -43,24 +43,17 @@
 								<div class="main-menu">
 									<nav class="navigation">
 										<ul class="nav menu">
-											<li><a href="{{ url_for('index') }}">Home</i></a></li>
-											<li><a href="#">Patients</a>
-												<ul class="dropdown">
-													<li><a href="{{ url_for('new_patient') }}">New Patient Registration</a></li>
-													<li><a href="{{ url_for('login')}}">Returning Patient</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Office Staff</a>
-												<ul class="dropdown">
-													<li><a href="#">Doctors</a></li>
-													<li><a href="#">Office Clerk</a></li>
-													<li><a href="{{ url_for('login_manager') }}">Office Managers</a></li>
-												</ul>
-											</li>
+											<li><a href="{{ url_for('add_officeManager') }}">Add New Office Manager</a></li>
+											<li><a href="{{ url_for('officeManagers') }}">Office Managers List</a></li>
 										</ul>
 									</nav>
 								</div>
 								<!--/ End Main Menu -->
+							</div>
+							<div class="col-lg-2 col-12">
+								<div class="get-quote">
+									<a href="{{ url_for('logout') }}" class="btn">Log Out</a>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -76,7 +69,7 @@
 					<div class="row">
 						<div class="col-lg-6">
 							<div class="contact-us-form">
-								<h2>New Patient Details</h2>
+								<h2>New Office Manager Details</h2>
 								<p>Please enter the information below.</p>
 								<!-- Form -->
 								<form class="form" method="POST">
@@ -115,21 +108,6 @@
 												<div class="col-lg-10">
 													<div class="form-group">
 														{{ form.email.label }} {{ form.email() }}
-													</div>
-												</div>
-												<div class="col-lg-6">
-													<div class="form-group">
-														{{ form.weight.label }} {{ form.weight() }}
-													</div>
-												</div>
-												<div class="col-lg-6">
-													<div class="form-group">
-														{{ form.height.label }} {{ form.height() }}
-													</div>
-												</div>
-												<div class="col-lg-6">
-													<div class="form-group">
-														{{ form.blood.label }} {{ form.blood() }}
 													</div>
 												</div>
 												<div class="col-lg-6">

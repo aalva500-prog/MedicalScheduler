@@ -34,21 +34,22 @@ class Patient(db.Model):
     person = db.relationship('Person', backref='patients')
 
 class Doctor(db.Model):
-    doctorID = db.Column(db.Integer, primary_key=True)
+    doctorID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     licenseNumber = db.Column(db.String(50), nullable=False)
     specialization = db.Column(db.String(50), nullable=False)
     personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
 
 class OfficeManager(db.Model):
-    managerID = db.Column(db.Integer, primary_key=True)
+    managerID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
+    person = db.relationship('Person', backref='managers')
 
 class StaffMember(db.Model):
     staffID = db.Column(db.Integer, primary_key=True)
     personID = db.Column(db.Integer, db.ForeignKey('person.id'), nullable=False)
 
 class Appointment(db.Model):
-    appointmentID = db.Column(db.Integer, primary_key=True)
+    appointmentID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     appointmentDate = db.Column(db.DateTime, nullable=False)
     appointmentTime = db.Column(db.String(10), nullable=False)
     appointmentType = db.Column(db.String(50), nullable=False)

@@ -50,14 +50,13 @@
 													<li><a href="{{ url_for('login')}}">Returning Patient</a></li>
 												</ul>
 											</li>
-											<li><a href="#">Providers</a>
+											<li><a href="#">Office Staff</a>
 												<ul class="dropdown">
-													<li><a href="{{ url_for('patients') }}">Patient List</a></li>
-													<li><a href="{{ url_for('appointments') }}">Appointments</a></li>
+													<li><a href="#">Doctors</a></li>
+													<li><a href="#">Office Clerk</a></li>
+													<li><a href="{{ url_for('login_manager') }}">Office Managers</a></li>
 												</ul>
 											</li>
-											<li><a href="#">Office Staff</a></li>
-											<li><a href="#">Administrators</a></li>
 										</ul>
 									</nav>
 								</div>
@@ -373,52 +372,4 @@
 			</div>
 		</section>
 		<!--/ End service -->
-<!-- Footer Area -->
-		<footer id="footer" class="footer ">
-			<!-- Footer Top -->
-			<div class="footer-top">
-				<div class="container">
-					<div class="row">
-						<div class="col-lg-3 col-md-6 col-12">
-							<div class="single-footer">
-								<h2>Social Media</h2>
-								<!-- Social -->
-								<ul class="social">
-									<li><a href="#"><i class="icofont-facebook"></i></a></li>
-									<li><a href="#"><i class="icofont-google-plus"></i></a></li>
-									<li><a href="#"><i class="icofont-twitter"></i></a></li>
-									<li><a href="#"><i class="icofont-vimeo"></i></a></li>
-									<li><a href="#"><i class="icofont-pinterest"></i></a></li>
-								</ul>
-								<!-- End Social -->
-							</div>
-						</div>
-						<div class="col-lg-3 col-md-6 col-12">
-							<div class="single-footer f-link">
-								<h2>Quick Links</h2>
-								<div class="row">
-									<div class="col-lg-6 col-md-6 col-12">
-										<ul>
-											<li><a href="{{ url_for('index') }}"><i class="fa fa-caret-right" aria-hidden="true"></i>Home</a></li>
-											<li><a href="{{ url_for('contact') }}"><i class="fa fa-caret-right" aria-hidden="true"></i>Contact Us</a></li>
-											<li><a href="{{ url_for('new_patient') }}"><i class="fa fa-caret-right" aria-hidden="true"></i>New Patient Registration</a></li>
-										</ul>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-3 col-md-6 col-12">
-							<div class="single-footer">
-								<h2>Open Hours</h2>
-								<ul class="time-sidual">
-									<li class="day">Monday - Friday<span>8:00 AM - 8:00 PM</span></li>
-									<li class="day">Saturday<span>9:00 AM - 6:30 PM</span></li>
-									<li class="day">Sunday Closed</li>
-								</ul>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<!--/ End Footer Top -->
 {% endblock %}

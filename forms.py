@@ -15,7 +15,7 @@ class AppointmentForm(FlaskForm):
     submit = SubmitField("Schedule Appointment")
 
 class PatientForm(FlaskForm):
-    id_number = StringField("License Number", render_kw={"autocomplete": "off", "placeholder": "Enter your License Number"}, validators=[DataRequired()])
+    id_number = StringField("License Number", render_kw={"autocomplete": "off", "placeholder": "Enter your ID Number"}, validators=[DataRequired()])
     first_name = StringField("First Name", render_kw={"autocomplete": "off", "placeholder": "Enter your First Name"}, validators=[DataRequired()])
     last_name = StringField("Last Name", render_kw={"autocomplete": "off", "placeholder": "Enter your Last Name"}, validators=[DataRequired()])
     username = StringField("Username", render_kw={"autocomplete": "off", "placeholder": "Enter your username"} , validators=[DataRequired()])
@@ -36,3 +36,17 @@ class LoginForm(FlaskForm):
     username = StringField("Username", render_kw={"autocomplete": "off", "placeholder": "Enter your username"}, validators=[DataRequired()])
     password = PasswordField("Password", render_kw={"autocomplete": "off", "placeholder": "Enter your password"}, validators=[DataRequired()])
     submit = SubmitField("Login")
+
+class OfficeManagerForm(FlaskForm):
+    id_number = StringField("License Number", render_kw={"autocomplete": "off", "placeholder": "Enter your ID Number"}, validators=[DataRequired()])
+    first_name = StringField("First Name", render_kw={"autocomplete": "off", "placeholder": "Enter your First Name"}, validators=[DataRequired()])
+    last_name = StringField("Last Name", render_kw={"autocomplete": "off", "placeholder": "Enter your Last Name"}, validators=[DataRequired()])
+    username = StringField("Username", render_kw={"autocomplete": "off", "placeholder": "Enter your username"}, validators=[DataRequired()])
+    password = PasswordField("Password", render_kw={"autocomplete": "off", "placeholder": "Enter your password"}, validators=[DataRequired()])
+    genders = [("Male", "Male"), ("Female", "Female")]
+    gender = SelectField("Gender", validators=[DataRequired()], choices=genders)
+    birthday = DateField('Birthday', render_kw={"autocomplete": "off", "placeholder": "Enter your Date of Birth"}, format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
+    address = StringField("Address", render_kw={"autocomplete": "off", "placeholder": "Enter your Address"}, validators=[DataRequired()])
+    phone_number = StringField("Phone Number", render_kw={"autocomplete": "off", "placeholder": "Enter your Phone Number"}, validators=[DataRequired()])
+    email = StringField("Email", render_kw={"autocomplete": "off", "placeholder": "Enter your email address"}, validators=[DataRequired(), Email()])
+    submit = SubmitField("Add Office Manager")
