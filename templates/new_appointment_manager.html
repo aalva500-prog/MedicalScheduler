@@ -9,7 +9,7 @@
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
 								<h5>Office Manager Dashboard</h5>
-								<p>Logged in as: {{ userName }}</p>
+								<p>Logged in as: {{ name }}</p>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -97,43 +97,52 @@
 			<!--/ End Header Inner -->
 		</header>
 		<!-- End Header Area -->
-	<section class="contact-us section">
-		<div class="container">
-			<div class="inner">
-				<h5>Patient List</h5>
-				<table>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>First Name</th>
-							<th>Last Name</th>
-							<th>Gender</th>
-							<th>DOB</th>
-							<th>Phone</th>
-							<th>Email</th>
-							<th>Weight (lb)</th>
-							<th>Height (cm)</th>
-							<th>Blood Type</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for patient in patients %}
-						<tr>
-							<td>{{patient.person.idNumber}}</td>
-							<td>{{patient.person.firstName}}</td>
-							<td>{{patient.person.lastName}}</td>
-							<td>{{patient.person.gender}}</td>
-							<td>{{patient.person.dateOfBirth}}</td>
-							<td>{{patient.person.phone}}</td>
-							<td>{{patient.person.email}}</td>
-							<td>{{ patient.weight }}</td>
-							<td>{{ patient.height }}</td>
-							<td>{{ patient.bloodType }}</td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>
+<!-- Start Add Patient -->
+		<section class="contact-us section">
+			<div class="container">
+				<div class="inner">
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="contact-us-form">
+								<h2>New Appointment Details</h2>
+								<p>Please enter the information below for Patient: {{ patient.firstName + " " + patient.lastName}}</p>
+								<!-- Form -->
+								<form class="form" method="POST">
+										{{ form.hidden_tag() }}
+										<div class="row">
+											<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.appointmentDate.label }} {{ form.appointmentDate() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.appointmentTime.label }} {{ form.appointmentTime() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.appointmentType.label }} {{ form.appointmentType() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.doctor.label }} {{ form.doctor() }}
+													</div>
+												</div>
+												<div class="col-12">
+													<div class="form-group login-btn">
+														{{ form.submit() }}
+													</div>
+												</div>
+										</div>
+										</form>
+							</div>
+								<!--/ End Form -->
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
-	</section>
+		</section>
+		<!--End Add Patient -->
 {% endblock %}

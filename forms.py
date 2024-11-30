@@ -15,6 +15,15 @@ class AppointmentForm(FlaskForm):
     doctor = SelectField("Doctor", coerce=int, validators=[DataRequired()])
     submit = SubmitField("Schedule Appointment")
 
+class AppointmentManagerForm(FlaskForm):
+    appointmentDate = DateField('Appointment Date', render_kw={"autocomplete": "off"}, format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
+    appointmentTime = TimeField("Appointment Time",  render_kw={"autocomplete": "off"}, format='%H:%M', validators=[DataRequired()])
+    types = [("New Patient Visit", "New Patient Visit"), ("Follow Up Visit", "Follow Up Visit")]
+    appointmentType = SelectField("Appointment Type", validators=[DataRequired()], choices=types)
+    patient = SelectField("Patient", coerce=int, validators=[DataRequired()])
+    doctor = SelectField("Doctor", coerce=int, validators=[DataRequired()])
+    submit = SubmitField("Schedule Appointment")
+
 class PatientForm(FlaskForm):
     id_number = StringField("License Number", render_kw={"autocomplete": "off", "placeholder": "Enter ID Number"}, validators=[DataRequired()])
     first_name = StringField("First Name", render_kw={"autocomplete": "off", "placeholder": "Enter First Name"}, validators=[DataRequired()])

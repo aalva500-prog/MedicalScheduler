@@ -2,7 +2,8 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
 from models import db, MedicalOffice, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment, Schedule
-from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm
+from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, \
+    AppointmentManagerForm
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 app = Flask(__name__)
@@ -27,15 +28,15 @@ def index():
 @app.route('/appointments')
 @login_required
 def appointments():
-    all_appointments = Appointment.query.all()
-    return render_template('appointmentsByPatient.html', appointments=all_appointments, name=current_user.userName)
+    all_appointments = Appointment.query.order_by(Appointment.appointmentDate.desc()).all()
+    return render_template('appointments.html', appointments=all_appointments, name=current_user.userName)
 
 @app.route('/appointmentsByPatient')
 @login_required
 def appointmentsByPatient():
     person = Person.query.filter_by(userName=current_user.userName).first()
     patient = Patient.query.filter_by(personID=person.id).first()
-    all_appointments = Appointment.query.filter_by(patientID = patient.patientID).all()
+    all_appointments = Appointment.query.filter_by(patientID = patient.patientID).order_by(Appointment.appointmentDate.desc()).all()
     return render_template('appointmentsByPatient.html', appointmentsByPatient=all_appointments, name=current_user.userName)
 
 @app.route('/patients')
@@ -154,6 +155,55 @@ def new_appointment():
         return redirect(url_for('dashboard'))
 
     return render_template('new_appointment.html', form=form, name=current_user.userName)
+
+@login_required
+@app.route('/new_appointment_manager', methods=['GET', 'POST'])
+def new_appointment_manager():
+    form = AppointmentManagerForm()
+    form.doctor.choices = [(doctor.doctorID, doctor.person.firstName + " " + doctor.person.lastName) for doctor in Doctor.query.all()]
+
+    if form.validate_on_submit():
+        user = Person.query.filter_by(userName=current_user.userName).first()
+        patient = Patient.query.filter_by(personID=user.id).first()
+        if patient:
+            appointment = Appointment(
+                appointmentDate=form.appointmentDate.data,
+                appointmentTime=form.appointmentTime.data,
+                appointmentType=form.appointmentType.data,
+                patientID=patient.patientID,
+                doctorID=form.doctor.data
+            )
+            db.session.add(appointment)
+            db.session.commit()
+
+        flash("Appointment scheduled successfully!", "success")
+        return redirect(url_for('dashboard'))
+
+    return render_template('new_appointment.html', form=form, name=current_user.userName)
+
+# View and schedule appointments
+@app.route('/patientDetails/<int:patient_id>', methods=['GET', 'POST'])
+def patientDetails(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+
+    form = AppointmentForm()
+    form.doctor.choices = [(doctor.doctorID, doctor.person.firstName + " " + doctor.person.lastName) for doctor in
+                           Doctor.query.all()]
+    all_appointments = Appointment.query.filter_by(patientID=patient_id).order_by(Appointment.appointmentDate.desc()).all()
+
+    if form.validate_on_submit():
+        appointment = Appointment(
+            appointmentDate=form.appointmentDate.data,
+            appointmentTime=form.appointmentTime.data,
+            appointmentType=form.appointmentType.data,
+            patientID=patient_id,
+            doctorID=form.doctor.data
+        )
+        db.session.add(appointment)
+        db.session.commit()
+        flash("Appointment scheduled successfully!")
+        return redirect(url_for('patientDetails', patient_id=patient.patientID))
+    return render_template('patientDetails.html', patient=patient, form=form, name=current_user.userName, appointments=all_appointments)
 
 
 @app.route('/new_patient', methods=['GET', 'POST'])
@@ -329,6 +379,20 @@ def add_doctor():
         return redirect(url_for('dashboard_managers'))
 
     return render_template('new_doctor.html', form=form, name=current_user.userName)
+
+# Search route
+@app.route('/search', methods=['GET'])
+@login_required
+def search():
+    query = request.args.get('query', '').strip()
+    if query:
+        # Search patients by ID Number
+        person = Person.query.filter_by(idNumber=query).first()
+        if person:
+            patient = Patient.query.filter_by(personID=person.id).first()
+            if patient:
+                return render_template('patientResults.html', patient=patient, query=query, name=current_user.userName)
+    return render_template('searchPatient.html', patients=[], query=query, name=current_user.userName)
 
 if __name__ == '__main__':
     app.run(debug=True)

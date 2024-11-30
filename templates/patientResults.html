@@ -9,7 +9,7 @@
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
 								<h5>Office Manager Dashboard</h5>
-								<p>Logged in as: {{ userName }}</p>
+								<p>Logged in as: {{ name }}</p>
 							</div>
 						</div>
 						<div class="col-lg-6 col-md-7 col-12">
@@ -47,7 +47,7 @@
 											<li><a href="{{ url_for('dashboard_managers') }}">Dashboard Home</a></li>
 											<li><a href="#">Appointments</a>
 											<ul class="dropdown">
-													<li><a href="{{ url_for('appointments') }}">Appointments History</a></li>
+													<li><a href="{{ url_for('appointments') }}">Appointments List</a></li>
 													<li><a href="#">Add New Appointment </a></li>
 													<li><a href="#">Manage Appointment</a></li>
 												</ul>
@@ -97,10 +97,11 @@
 			<!--/ End Header Inner -->
 		</header>
 		<!-- End Header Area -->
+<ul>
 	<section class="contact-us section">
 		<div class="container">
 			<div class="inner">
-				<h5>Patient List</h5>
+				<h5>Search Result</h5>
 				<table>
 					<thead>
 						<tr>
@@ -117,7 +118,6 @@
 						</tr>
 					</thead>
 					<tbody>
-						{% for patient in patients %}
 						<tr>
 							<td>{{patient.person.idNumber}}</td>
 							<td>{{patient.person.firstName}}</td>
@@ -130,10 +130,11 @@
 							<td>{{ patient.height }}</td>
 							<td>{{ patient.bloodType }}</td>
 						</tr>
-						{% endfor %}
 					</tbody>
 				</table>
+				<a href="{{ url_for('patientDetails', patient_id=patient.patientID) }}">View & Schedule Appointment</a>
 			</div>
 		</div>
 	</section>
+</ul>
 {% endblock %}
