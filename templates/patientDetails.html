@@ -91,8 +91,8 @@
 											<li><a href="{{ url_for('dashboard_managers') }}">Dashboard Home</a></li>
 											<li><a href="#">Appointments</a>
 											<ul class="dropdown">
-													<li><a href="{{ url_for('appointments') }}">Appointments List</a></li>
-													<li><a href="#">Add New Appointment </a></li>
+													<li><a href="{{ url_for('appointments') }}">Appointments History</a></li>
+													<li><a href="{{ url_for('search') }}">Add New Appointment</a></li>
 													<li><a href="#">Manage Appointment</a></li>
 												</ul>
 											</li>
@@ -146,6 +146,16 @@
 		<div class="container">
 			<div class="inner">
 				<p><strong>Patient Details</strong></p>
+				<!-- Display Flash Messages -->
+				{% with messages = get_flashed_messages() %}
+				  {% if messages %}
+					<ul>
+					  {% for message in messages %}
+						<li style="color: green;">{{ message }}</li>
+					  {% endfor %}
+					</ul>
+				  {% endif %}
+				{% endwith %}
 				<p>--> ID: {{ patient.person.idNumber }}<br>
 				--> Name: {{ patient.person.firstName + " " + patient.person.lastName}}<br>
 				--> DOB: {{ patient.person.dateOfBirth }}</p>

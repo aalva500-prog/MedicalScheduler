@@ -47,7 +47,7 @@
 											<li><a href="#">Patients</a>
 												<ul class="dropdown">
 													<li><a href="{{ url_for('new_patient') }}">New Patient Registration</a></li>
-													<li><a href="{{ url_for('login')}}">Returning Patient</a></li>
+													<li><a href="{{ url_for('login')}}">Patient Dashboard</a></li>
 												</ul>
 											</li>
 											<li><a href="#">Office Staff</a>
@@ -81,6 +81,16 @@
 						<div class="contact-us-form">
 							<h2>User Details</h2>
 							<p>Please enter the information below.</p>
+							 <!-- Display Flash Messages -->
+								{% with messages = get_flashed_messages() %}
+								  {% if messages %}
+									<ul>
+									  {% for message in messages %}
+										<li style="color: green;">{{ message }}</li>
+									  {% endfor %}
+									</ul>
+								  {% endif %}
+								{% endwith %}
 
 							<form class="form" method="POST">
 									{{ form.hidden_tag() }}

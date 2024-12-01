@@ -2,9 +2,10 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
 from models import db, MedicalOffice, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment, Schedule
-from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, \
-    AppointmentManagerForm
+from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, AppointmentManagerForm, UpdatePatientForm
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+import smtplib
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -12,6 +13,15 @@ db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Configure Flask-Mail
+app.config["MAIL_SERVER"] = "smtp.gmail.com"  # For example, Gmail SMTP
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = "aaapcsolutions@gmail.com"
+app.config["MAIL_PASSWORD"] = "sglk hfnr bkkp bkey"
+
+mail = Mail(app)
 
 @login_manager.user_loader
 def load_user(personID):
@@ -77,6 +87,51 @@ def dashboard():
                            lastName=person.lastName, firstName=person.firstName, gender=person.gender, dob=person.dateOfBirth,
                            address=person.address, phone=person.phone, email=person.email, weight=patient.weight, height=patient.height,
                            bloodType = patient.bloodType)
+@app.route('/update_patient', methods=['GET', 'POST'])
+@login_required
+def update_patient():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+    # Create the form
+    form = UpdatePatientForm()
+
+    # Prepopulate the form with patient data
+    if request.method == "GET":
+        form.idNumber.data= person.idNumber
+        form.firstName.data = person.firstName
+        form.lastName.data = person.lastName
+        form.gender.data = person.gender
+        form.dateOfBirth.data = person.dateOfBirth
+        form.address.data = person.address
+        form.phone.data = person.phone
+        form.email.data = person.email
+        form.weight.data = patient.weight
+        form.height.data = patient.height
+        form.bloodType.data = patient.bloodType
+
+    # Process form submission
+    if form.validate_on_submit():
+        person.idNumber=form.idNumber.data.upper()
+        person.firstName=form.firstName.data
+        person.lastName=form.lastName.data
+        person.gender=form.gender.data
+        person.dateOfBirth=form.dateOfBirth.data
+        person.address=form.address.data.lower()
+        person.phone=form.phone.data
+        person.email=form.email.data.lower()
+        patient.weight=form.weight.data
+        patient.height=form.height.data
+        patient.bloodType=form.bloodType.data
+
+        # Commit changes to the database
+        try:
+            db.session.commit()
+            flash("Patient information updated successfully!", "success")
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating patient information: {str(e)}", "danger")
+    return render_template('update_patient.html', name=current_user.userName, form=form)
 
 @app.route('/dashboard_managers')
 @login_required
@@ -95,14 +150,16 @@ def login():
         password = form.password.data
 
         user = Person.query.filter_by(userName=userName).first()
-        patient = Patient.query.filter_by(personID=user.id).first()
-        if patient and user.password == password:
-            login_user(user)  # Create session for the user
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
+        if user:
+            patient = Patient.query.filter_by(personID=user.id).first()
+            if patient and user.password == password:
+                login_user(user)  # Create session for the user
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Invalid username or password!', 'danger')
         else:
             flash('Invalid username or password!', 'danger')
-
     return render_template('login.html', form=form)
 
 @app.route('/login_manager', methods=['GET', 'POST'])
@@ -114,11 +171,14 @@ def login_manager():
         password = form.password.data
 
         user = Person.query.filter_by(userName=userName).first()
-        manager = OfficeManager.query.filter_by(personID=user.id).first()
-        if manager and user.password == password:
-            login_user(user)  # Create session for the user
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard_managers'))
+        if user:
+            manager = OfficeManager.query.filter_by(personID=user.id).first()
+            if manager and user.password == password:
+                login_user(user)  # Create session for the user
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard_managers'))
+            else:
+                flash('Invalid username or password!', 'danger')
         else:
             flash('Invalid username or password!', 'danger')
 
@@ -151,37 +211,30 @@ def new_appointment():
             db.session.add(appointment)
             db.session.commit()
 
-        flash("Appointment scheduled successfully!", "success")
-        return redirect(url_for('dashboard'))
-
-    return render_template('new_appointment.html', form=form, name=current_user.userName)
-
-@login_required
-@app.route('/new_appointment_manager', methods=['GET', 'POST'])
-def new_appointment_manager():
-    form = AppointmentManagerForm()
-    form.doctor.choices = [(doctor.doctorID, doctor.person.firstName + " " + doctor.person.lastName) for doctor in Doctor.query.all()]
-
-    if form.validate_on_submit():
-        user = Person.query.filter_by(userName=current_user.userName).first()
-        patient = Patient.query.filter_by(personID=user.id).first()
-        if patient:
-            appointment = Appointment(
-                appointmentDate=form.appointmentDate.data,
-                appointmentTime=form.appointmentTime.data,
-                appointmentType=form.appointmentType.data,
-                patientID=patient.patientID,
-                doctorID=form.doctor.data
+            # Create the email
+            msg = Message(
+                subject="Appointment Confirmation",
+                sender="aaapcsolutions@gmail.com",
+                recipients=[user.email]
             )
-            db.session.add(appointment)
-            db.session.commit()
+            msg.body = f"Patient Name: {user.firstName} {user.lastName}\nAppointment Type: {appointment.appointmentType} \n Appointment Date: {appointment.appointmentDate} \nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
 
-        flash("Appointment scheduled successfully!", "success")
-        return redirect(url_for('dashboard'))
+            # Send the email
+            try:
+                mail.send(msg)
+                flash("Please check your email for a confirmation message!\n", "success")
+            except Exception as e:
+                flash(f"Failed to send message: {e}", "danger")
+
+            flash(
+                f"{appointment.appointmentType} appointment has been scheduled successfully for {appointment.appointmentDate} at {appointment.appointmentTime}!",
+                "success")
+            return redirect(url_for('new_appointment'))
 
     return render_template('new_appointment.html', form=form, name=current_user.userName)
 
 # View and schedule appointments
+@login_required
 @app.route('/patientDetails/<int:patient_id>', methods=['GET', 'POST'])
 def patientDetails(patient_id):
     patient = Patient.query.get_or_404(patient_id)
@@ -201,7 +254,25 @@ def patientDetails(patient_id):
         )
         db.session.add(appointment)
         db.session.commit()
-        flash("Appointment scheduled successfully!")
+
+        # Create the email
+        msg = Message(
+            subject="Appointment Confirmation",
+            sender="aaapcsolutions@gmail.com",
+            recipients=[patient.person.email]
+        )
+        msg.body = f"Patient Name: {patient.person.firstName} {patient.person.lastName}\nAppointment Type: {appointment.appointmentType} \n Appointment Date: {appointment.appointmentDate} \nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
+
+        # Send the email
+        try:
+            mail.send(msg)
+            flash("Please check your email for a confirmation message!\n", "success")
+        except Exception as e:
+            flash(f"Failed to send message: {e}", "danger")
+
+        flash(
+            f"{appointment.appointmentType} appointment has been scheduled successfully for {appointment.appointmentDate} at {appointment.appointmentTime}!",
+            "success")
         return redirect(url_for('patientDetails', patient_id=patient.patientID))
     return render_template('patientDetails.html', patient=patient, form=form, name=current_user.userName, appointments=all_appointments)
 
@@ -238,7 +309,7 @@ def new_patient():
         db.session.commit()
 
         flash("Patient Added successfully!", "success")
-        return redirect(url_for('login'))
+        return redirect(url_for('new_patient'))
 
     return render_template('new_patient.html', form=form)
 
@@ -275,7 +346,7 @@ def new_patient_manager():
         db.session.commit()
 
         flash("Patient Added successfully!", "success")
-        return redirect(url_for('dashboard_managers'))
+        return redirect(url_for('new_patient_manager'))
 
     return render_template('new_patient_manager.html', form=form, name=current_user.userName)
 

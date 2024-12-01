@@ -81,7 +81,16 @@
 						<div class="contact-us-form">
 							<h2>User Details</h2>
 							<p>Please enter the information below.</p>
-
+							<!-- Display Flash Messages -->
+								{% with messages = get_flashed_messages() %}
+								  {% if messages %}
+									<ul>
+									  {% for message in messages %}
+										<li style="color: green;">{{ message }}</li>
+									  {% endfor %}
+									</ul>
+								  {% endif %}
+								{% endwith %}
 							<form class="form" method="POST">
 									{{ form.hidden_tag() }}
 									<div class="row">

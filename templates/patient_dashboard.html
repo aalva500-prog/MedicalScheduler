@@ -47,7 +47,7 @@
 											<li><a href="{{ url_for('new_appointment') }}">Schedule Appointment</a></li>
 											<li><a href="{{ url_for('appointmentsByPatient') }}">Appointment History</a></li>
 											<li><a href="#">Manage Appointment</a></li>
-											<li><a href="#">Modify Patient Information</a></li>
+											<li><a href="{{ url_for('update_patient') }}">Modify Patient Information</a></li>
 										</ul>
 									</nav>
 								</div>
@@ -68,6 +68,16 @@
 	<section class="contact-us section">
 		<div class="container">
 			<div class="inner">
+				 <!-- Display Flash Messages -->
+				{% with messages = get_flashed_messages() %}
+				  {% if messages %}
+					<ul>
+					  {% for message in messages %}
+						<li style="color: green;">{{ message }}</li>
+					  {% endfor %}
+					</ul>
+				  {% endif %}
+				{% endwith %}
 				 <h3>Welcome, {{ userName }}!</h3>
 				 <p>You are logged in.</p>
 				<br>

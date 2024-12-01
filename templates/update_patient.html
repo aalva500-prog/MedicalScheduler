@@ -8,7 +8,7 @@
 					<div class="row">
 						<div class="col-lg-6 col-md-5 col-12">
 							<div class="text">
-								<h5>Office Manager Dashboard</h5>
+								<h5>Patient Dashboard</h5>
 								<p>Logged in as: {{ name }}</p>
 							</div>
 						</div>
@@ -32,7 +32,7 @@
 							<div class="col-lg-3 col-md-3 col-12">
 								<!-- Start Logo -->
 								<div class="logo">
-									<a href="#"><img src="../static/img/logo.png" alt="#"></a>
+									<a href="{{ url_for('index')}}"><img src="../static/img/logo.png" alt="#"></a>
 								</div>
 								<!-- End Logo -->
 								<!-- Mobile Nav -->
@@ -44,42 +44,11 @@
 								<div class="main-menu">
 									<nav class="navigation">
 										<ul class="nav menu">
-											<li><a href="{{ url_for('dashboard_managers') }}">Dashboard Home</a></li>
-											<li><a href="#">Appointments</a>
-											<ul class="dropdown">
-													<li><a href="{{ url_for('appointments') }}">Appointments History</a></li>
-													<li><a href="#">Add New Appointment </a></li>
-													<li><a href="#">Manage Appointment</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Patients</a>
-											<ul class="dropdown">
-													<li><a href="{{ url_for('patients') }}">Patient List</a></li>
-													<li><a href="{{ url_for('new_patient_manager') }}">Add New Patient</a></li>
-													<li><a href="#">Update Patient Information</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Doctors</a>
-												<ul class="dropdown">
-													<li><a href="{{ url_for('doctors') }}">Doctors List</a></li>
-													<li><a href="{{ url_for('add_doctor') }}">Add New Doctor</a></li>
-													<li><a href="#">Update Doctor Information</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Office Clerks</a>
-												<ul class="dropdown">
-													<li><a href="{{ url_for('officeClerks') }}">Office Clerks List</a></li>
-													<li><a href="{{ url_for('add_officeClerk') }}">Add New Office Clerk Member</a></li>
-													<li><a href="#">Update Office Clerk Information</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Office Managers</a>
-												<ul class="dropdown">
-													<li><a href="{{ url_for('officeManagers')}}">Office Managers List</a></li>
-													<li><a href="{{ url_for('add_officeManager')}}">Add New Office Managers</a></li>
-													<li><a href="#">Update Office Manager Information</a></li>
-												</ul>
-											</li>
+											<li><a href="{{ url_for('dashboard') }}">Dashboard Home</a></li>
+											<li><a href="{{ url_for('new_appointment') }}">Schedule Appointment</a></li>
+											<li><a href="{{ url_for('appointmentsByPatient') }}">Appointment History</a></li>
+											<li><a href="#">Manage Appointment</a></li>
+											<li><a href="{{ url_for('update_patient') }}">Modify Patient Information</a></li>
 										</ul>
 									</nav>
 								</div>
@@ -104,30 +73,75 @@
 					<div class="row">
 						<div class="col-lg-6">
 							<div class="contact-us-form">
-								<h2>New Appointment Details</h2>
-								<p>Please enter the information below for Patient: {{ patient.firstName + " " + patient.lastName}}</p>
+								<h2>Update Patient Details</h2>
+								<p>Please change the information below to update your information.</p>
+								 <!-- Display Flash Messages -->
+								{% with messages = get_flashed_messages() %}
+								  {% if messages %}
+									<ul>
+									  {% for message in messages %}
+										<li style="color: green;">{{ message }}</li>
+									  {% endfor %}
+									</ul>
+								  {% endif %}
+								{% endwith %}
 								<!-- Form -->
 								<form class="form" method="POST">
 										{{ form.hidden_tag() }}
 										<div class="row">
 											<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.appointmentDate.label }} {{ form.appointmentDate() }}
+														{{ form.idNumber.label }} {{ form.idNumber() }}
 													</div>
 												</div>
 												<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.appointmentTime.label }} {{ form.appointmentTime() }}
+														{{ form.firstName.label }} {{ form.firstName() }}
 													</div>
 												</div>
 												<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.appointmentType.label }} {{ form.appointmentType() }}
+														{{ form.lastName.label }} {{ form.lastName() }}
 													</div>
 												</div>
 												<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.doctor.label }} {{ form.doctor() }}
+														{{ form.dateOfBirth.label }} {{ form.dateOfBirth() }}
+													</div>
+												</div>
+												<div class="col-lg-12">
+													<div class="form-group">
+														{{ form.address.label }} {{ form.address() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.phone.label }} {{ form.phone() }}
+													</div>
+												</div>
+												<div class="col-lg-10">
+													<div class="form-group">
+														{{ form.email.label }} {{ form.email() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.weight.label }} {{ form.weight() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.height.label }} {{ form.height() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.bloodType.label }} {{ form.bloodType() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.gender.label }} {{ form.gender() }}
 													</div>
 												</div>
 												<div class="col-12">
@@ -145,4 +159,5 @@
 			</div>
 		</section>
 		<!--End Add Patient -->
+
 {% endblock %}

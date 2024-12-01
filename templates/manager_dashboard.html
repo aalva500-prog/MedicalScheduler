@@ -99,6 +99,16 @@
 	<section class="contact-us section">
 		<div class="container">
 			<div class="inner">
+				<!-- Display Flash Messages -->
+				{% with messages = get_flashed_messages() %}
+				  {% if messages %}
+					<ul>
+					  {% for message in messages %}
+						<li style="color: green;">{{ message }}</li>
+					  {% endfor %}
+					</ul>
+				  {% endif %}
+				{% endwith %}
 				 <h3>Welcome, {{ userName }}!</h3>
 				 <p>You are logged in.</p>
 				<br>
