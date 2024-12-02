@@ -46,10 +46,11 @@
 										<ul class="nav menu">
 											<li><a href="{{ url_for('dashboard_managers') }}">Dashboard Home</a></li>
 											<li><a href="#">Appointments</a>
-											<ul class="dropdown">
-													<li><a href="{{ url_for('appointments') }}">Appointments History</a></li>
+												<ul class="dropdown">
 													<li><a href="{{ url_for('search') }}">Add New Appointment</a></li>
-													<li><a href="#">Manage Appointment</a></li>
+													<li><a href="#">Cancel & Reschedule Appointment</a></li>
+													<li><a href="{{ url_for('appointments') }}">Appointments History</a></li>
+													<li><a href="{{ url_for('filter_appointments') }}">Filter Appointments by Date Range</a></li>
 												</ul>
 											</li>
 											<li><a href="#">Patients</a>
@@ -105,6 +106,7 @@
 				<table>
 					<thead>
 						<tr>
+							<th>#</th>
 							<th>Patient</th>
 							<th>Appointment Date</th>
 							<th>Appointment Time</th>
@@ -116,6 +118,7 @@
 					<tbody>
 						{% for appointment in appointments %}
 						<tr>
+							<td>{{ loop.index }}</td>
 							<td>{{appointment.patient.person.firstName + " " + appointment.patient.person.lastName}}</td>
 							<td>{{appointment.appointmentDate}}</td>
 							<td>{{appointment.appointmentTime}}</td>

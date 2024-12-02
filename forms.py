@@ -15,6 +15,13 @@ class AppointmentForm(FlaskForm):
     doctor = SelectField("Doctor", coerce=int, validators=[DataRequired()])
     submit = SubmitField("Schedule Appointment")
 
+class RescheduleAppointmentForm(FlaskForm):
+    appointmentDate = StringField('Appointment Date', render_kw={"autocomplete": "off"}, widget=DateInput(), validators=[DataRequired()])
+    appointmentTime = TimeField("Appointment Time",  render_kw={"autocomplete": "off"}, format='%H:%M', validators=[DataRequired()])
+    types = [("New Patient Visit", "New Patient Visit"), ("Follow Up Visit", "Follow Up Visit")]
+    appointmentType = SelectField("Appointment Type", validators=[DataRequired()], choices=types)
+    submit = SubmitField("Reschedule Appointment")
+
 class AppointmentManagerForm(FlaskForm):
     appointmentDate = DateField('Appointment Date', render_kw={"autocomplete": "off"}, format='%Y-%m-%d', widget=DateInput(), validators=[DataRequired()])
     appointmentTime = TimeField("Appointment Time",  render_kw={"autocomplete": "off"}, format='%H:%M', validators=[DataRequired()])
@@ -107,3 +114,12 @@ class DoctorForm(FlaskForm):
     license = StringField("Doctor's License", render_kw={"autocomplete": "off", "placeholder": "Enter Doctor's License"}, validators=[DataRequired()])
     submit = SubmitField("Add Doctor ")
 
+class SearchAppointmentForm(FlaskForm):
+    appointmentDate = StringField('Appointment Date', render_kw={"autocomplete": "off"}, widget=DateInput(), validators=[DataRequired()])
+    appointmentTime = TimeField("Appointment Time", render_kw={"autocomplete": "off"}, format='%H:%M', validators=[DataRequired()])
+    submit = SubmitField("Search Appointment")
+
+class DateRangeForm(FlaskForm):
+    start_date = DateField("Start Date", validators=[DataRequired()])
+    end_date = DateField("End Date", validators=[DataRequired()])
+    submit = SubmitField("View Appointments")

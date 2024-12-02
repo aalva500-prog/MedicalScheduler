@@ -1,10 +1,10 @@
 # app.py
 from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
-from models import db, MedicalOffice, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment, Schedule
-from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, AppointmentManagerForm, UpdatePatientForm
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-import smtplib
+from models import db, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment
+from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, \
+    AppointmentManagerForm, UpdatePatientForm, SearchAppointmentForm, RescheduleAppointmentForm, DateRangeForm
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 
 app = Flask(__name__)
@@ -41,6 +41,12 @@ def appointments():
     all_appointments = Appointment.query.order_by(Appointment.appointmentDate.desc()).all()
     return render_template('appointments.html', appointments=all_appointments, name=current_user.userName)
 
+@app.route('/appointments')
+@login_required
+def appointmentsByTime(patient_id):
+    all_appointments = Appointment.query.order_by(Appointment.appointmentDate.desc()).all()
+    return render_template('appointments.html', appointments=all_appointments, name=current_user.userName)
+
 @app.route('/appointmentsByPatient')
 @login_required
 def appointmentsByPatient():
@@ -52,7 +58,7 @@ def appointmentsByPatient():
 @app.route('/patients')
 @login_required
 def patients():
-    all_patients = Patient.query.all()
+    all_patients = Patient.query.order_by().all()
     return render_template('patients.html', patients=all_patients, userName=current_user.userName)
 
 @app.route('/clerks')
@@ -464,6 +470,143 @@ def search():
             if patient:
                 return render_template('patientResults.html', patient=patient, query=query, name=current_user.userName)
     return render_template('searchPatient.html', patients=[], query=query, name=current_user.userName)
+
+@app.route('/search_appointment', methods=["GET", "POST"])
+@login_required
+def search_appointment():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+    form = SearchAppointmentForm()
+    results = None
+
+    if form.validate_on_submit():
+        # Get form data
+        appointment_date = form.appointmentDate.data
+        appointment_time = form.appointmentTime.data
+
+        # Build the query dynamically
+        all_appointments = Appointment.query.filter_by(patientID=patient.patientID)
+        if appointment_date:
+            all_appointments = all_appointments.filter(Appointment.appointmentDate == appointment_date)
+        if appointment_time:
+            all_appointments = all_appointments.filter(Appointment.appointmentTime == appointment_time)
+
+        # Execute query
+        results = all_appointments.first()
+    return render_template("searchAppointment.html", form=form, appointment=results, name=current_user.userName)
+
+# View and reschedule appointments
+@login_required
+@app.route('/appointmentDetails/<int:appointment_id>', methods=['GET', 'POST'])
+def appointmentDetails(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+
+    form = RescheduleAppointmentForm()
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+
+    # Prepopulate the form with patient data
+    if request.method == "GET":
+        form.appointmentDate.data = appointment.appointmentDate
+        form.appointmentTime.data = appointment.appointmentTime
+        form.appointmentType.data = appointment.appointmentType
+
+    # Process form submission
+    if form.validate_on_submit():
+        appointment.appointmentDate = form.appointmentDate.data
+        appointment.appointmentTime = form.appointmentTime.data
+        appointment.appointmentType = form.appointmentType.data
+
+        # Commit changes to the database
+        try:
+            db.session.commit()
+
+            # Create the email
+            msg = Message(
+                subject="Reschedule Appointment Confirmation",
+                sender="aaapcsolutions@gmail.com",
+                recipients=[person.email]
+            )
+            msg.body = f"Patient Name: {patient.person.firstName} {patient.person.lastName}\nAppointment Type: {appointment.appointmentType}\nAppointment Date: {appointment.appointmentDate}\nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
+
+            # Send the email
+            try:
+                mail.send(msg)
+                flash("Please check your email for a confirmation message!\n", "success")
+            except Exception as e:
+                flash(f"Failed to send message: {e}", "danger")
+
+            flash(
+                f"{appointment.appointmentType} appointment has been rescheduled successfully for {appointment.appointmentDate} at {appointment.appointmentTime}!",
+                "success")
+            return redirect(url_for('dashboard', name=current_user.userName))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating appointment information: {str(e)}", "danger")
+    return render_template('appointmentDetails.html', appointment=appointment, form=form, name=current_user.userName)
+
+
+@login_required
+@app.route('/deleteAppointment/<int:appointment_id>', methods=['GET', 'POST'])
+def deleteAppointment(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+
+    # Commit changes to the database
+    try:
+        # Create the email
+        msg = Message(
+            subject="Appointment Cancellation Confirmation",
+            sender="aaapcsolutions@gmail.com",
+            recipients=[person.email]
+        )
+        msg.body = f"Hello,\n\nPlease see details below for the cancelled appointment:\n\nPatient Name: {patient.person.firstName} {patient.person.lastName}\nAppointment Type: {appointment.appointmentType}\nAppointment Date: {appointment.appointmentDate}\nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
+
+        # Send the email
+        try:
+            mail.send(msg)
+            flash("Please check your email for a confirmation message!\n", "success")
+        except Exception as e:
+            flash(f"Failed to send message: {e}", "danger")
+
+        flash(
+            f"{appointment.appointmentType} appointment has been canceled successfully for {appointment.appointmentDate} at {appointment.appointmentTime}!",
+            "success")
+
+        db.session.delete(appointment)
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting appointment information: {str(e)}", "danger")
+    return redirect(url_for('dashboard', name=current_user.userName))
+
+
+@app.route("/filter_appointments", methods=["GET", "POST"])
+def filter_appointments():
+    form = DateRangeForm()
+    results = None
+
+    if form.validate_on_submit():
+        # Get start and end dates from the form
+        start_date = form.start_date.data
+        end_date = form.end_date.data
+
+        # Validate date range
+        if start_date > end_date:
+            flash("Start date cannot be after the end date.", "danger")
+        else:
+            # Query appointments within the date range
+            results = Appointment.query.filter(
+                Appointment.appointmentDate >= start_date,
+                Appointment.appointmentDate <= end_date
+            ).order_by(Appointment.appointmentDate.asc()).all()
+
+    return render_template("filterAppointments.html", form=form, results=results)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

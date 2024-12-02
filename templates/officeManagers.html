@@ -47,9 +47,10 @@
 											<li><a href="{{ url_for('dashboard_managers') }}">Dashboard Home</a></li>
 											<li><a href="#">Appointments</a>
 											<ul class="dropdown">
+													<li><a href="{{ url_for('search') }}">Add New Appointment</a></li>
+													<li><a href="#">Cancel & Reschedule Appointment</a></li>
 													<li><a href="{{ url_for('appointments') }}">Appointments History</a></li>
-													<li><a href="#">Add New Appointment </a></li>
-													<li><a href="#">Manage Appointment</a></li>
+													<li><a href="{{ url_for('filter_appointments') }}">Filter Appointments by Date Range</a></li>
 												</ul>
 											</li>
 											<li><a href="#">Patients</a>
@@ -104,6 +105,7 @@
 				<table>
 					<thead>
 						<tr>
+							<th>#</th>
 							<th>ID</th>
 							<th>First Name</th>
 							<th>Last Name</th>
@@ -116,6 +118,7 @@
 					<tbody>
 						{% for manager in managers %}
 						<tr>
+							<td>{{ loop.index }}</td>
 							<td>{{manager.person.idNumber}}</td>
 							<td>{{manager.person.firstName}}</td>
 							<td>{{manager.person.lastName}}</td>
