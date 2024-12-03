@@ -206,6 +206,17 @@ def new_appointment():
     if form.validate_on_submit():
         user = Person.query.filter_by(userName=current_user.userName).first()
         patient = Patient.query.filter_by(personID=user.id).first()
+
+        # Check if an appointment exists for the same patient and date
+        existing_appointment = Appointment.query.filter_by(
+            patientID=patient.patientID,
+            appointmentDate=form.appointmentDate.data
+        ).first()
+
+        if existing_appointment:
+            flash('ERROR: An appointment for this patient already exists on the selected date!', 'danger')
+            return redirect(url_for('new_appointment'))
+
         if patient:
             appointment = Appointment(
                 appointmentDate=form.appointmentDate.data,
@@ -223,7 +234,7 @@ def new_appointment():
                 sender="aaapcsolutions@gmail.com",
                 recipients=[user.email]
             )
-            msg.body = f"Patient Name: {user.firstName} {user.lastName}\nAppointment Type: {appointment.appointmentType} \n Appointment Date: {appointment.appointmentDate} \nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
+            msg.body = f"Patient Name: {user.firstName} {user.lastName}\nAppointment Type: {appointment.appointmentType}\nAppointment Date: {appointment.appointmentDate}\nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
 
             # Send the email
             try:
@@ -251,6 +262,17 @@ def patientDetails(patient_id):
     all_appointments = Appointment.query.filter_by(patientID=patient_id).order_by(Appointment.appointmentDate.desc()).all()
 
     if form.validate_on_submit():
+
+        # Check if an appointment exists for the same patient and date
+        existing_appointment = Appointment.query.filter_by(
+            patientID=patient.patientID,
+            appointmentDate=form.appointmentDate.data
+        ).first()
+
+        if existing_appointment:
+            flash('ERROR: An appointment for this patient already exists on the selected date!', 'danger')
+            return redirect(url_for('patientDetails', patient_id=patient.patientID))
+
         appointment = Appointment(
             appointmentDate=form.appointmentDate.data,
             appointmentTime=form.appointmentTime.data,
@@ -513,6 +535,16 @@ def appointmentDetails(appointment_id):
 
     # Process form submission
     if form.validate_on_submit():
+        # Check if an appointment exists for the same patient and date
+        existing_appointment = Appointment.query.filter_by(
+            patientID=patient.patientID,
+            appointmentDate=form.appointmentDate.data
+        ).first()
+
+        if existing_appointment:
+            flash('ERROR: An appointment for this patient already exists on the selected date!', 'danger')
+            return redirect(url_for('appointmentDetails', appointment_id=appointment.appointmentID))
+
         appointment.appointmentDate = form.appointmentDate.data
         appointment.appointmentTime = form.appointmentTime.data
         appointment.appointmentType = form.appointmentType.data
@@ -583,7 +615,6 @@ def deleteAppointment(appointment_id):
         db.session.rollback()
         flash(f"Error deleting appointment information: {str(e)}", "danger")
     return redirect(url_for('dashboard', name=current_user.userName))
-
 
 @app.route("/filter_appointments", methods=["GET", "POST"])
 def filter_appointments():
