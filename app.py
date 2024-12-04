@@ -7,6 +7,7 @@ from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, Do
     SearchAppointmentByManagerForm, UpdatePatientManagerForm
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
+import logging
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -22,7 +23,13 @@ app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = "aaapcsolutions@gmail.com"
 app.config["MAIL_PASSWORD"] = "sglk hfnr bkkp bkey"
 
+# Session Security
+app.config['SESSION_COOKIE_SECURE'] = True  # Use only over HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent access via JavaScript
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Prevent CSRF
+
 mail = Mail(app)
+
 
 @login_manager.user_loader
 def load_user(id):
@@ -32,6 +39,12 @@ def load_user(id):
 @app.before_request
 def create_tables():
     db.create_all()
+
+# Logging and Monitoring. Log all access and error events to detect and respond to unauthorized activities.
+logging.basicConfig(filename='app.log', level=logging.INFO)
+@app.before_request
+def log_request():
+    logging.info(f"Accessed by: {request.remote_addr}, Endpoint: {request.endpoint}")
 
 # Index Page route
 @app.route('/')
