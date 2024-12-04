@@ -28,26 +28,24 @@ mail = Mail(app)
 def load_user(id):
     return Person.query.get(int(id))
 
+# Load tables when App is run
 @app.before_request
 def create_tables():
     db.create_all()
 
+# Index Page route
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Managers can see the list of all appointments
 @app.route('/appointments')
 @login_required
 def appointments():
     all_appointments = Appointment.query.order_by(Appointment.appointmentDate.desc()).all()
     return render_template('appointments.html', appointments=all_appointments, name=current_user.userName)
 
-@app.route('/appointments')
-@login_required
-def appointmentsByTime(patient_id):
-    all_appointments = Appointment.query.order_by(Appointment.appointmentDate.desc()).all()
-    return render_template('appointments.html', appointments=all_appointments, name=current_user.userName)
-
+# Patients can see their appointments in their Dashboard
 @app.route('/appointmentsByPatient')
 @login_required
 def appointmentsByPatient():
@@ -56,35 +54,40 @@ def appointmentsByPatient():
     all_appointments = Appointment.query.filter_by(patientID = patient.patientID).order_by(Appointment.appointmentDate.desc()).all()
     return render_template('appointmentsByPatient.html', appointmentsByPatient=all_appointments, name=current_user.userName)
 
+# Managers can see the list of patients
 @app.route('/patients')
 @login_required
 def patients():
     all_patients = Patient.query.order_by().all()
     return render_template('patients.html', patients=all_patients, userName=current_user.userName)
 
+# Managers can see the list of Office Clerks
 @app.route('/clerks')
 @login_required
 def officeClerks():
     all_clerks = StaffMember.query.all()
     return render_template('officeClerks.html', clerks=all_clerks, userName=current_user.userName)
 
+# Managers can see the list of Doctors
 @app.route('/doctors')
 @login_required
 def doctors():
     all_doctors = Doctor.query.all()
     return render_template('doctors.html', doctors=all_doctors, userName=current_user.userName)
 
+# Managers can see the list of Managers
 @app.route('/officeManagers')
 @login_required
 def officeManagers():
     all_managers = OfficeManager.query.all()
     return render_template('officeManagers.html', managers=all_managers, name=current_user.userName)
 
-
+# Route to the Contact page
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
 
+# Route to the Patient's Dashboard
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -94,6 +97,8 @@ def dashboard():
                            lastName=person.lastName, firstName=person.firstName, gender=person.gender, dob=person.dateOfBirth,
                            address=person.address, phone=person.phone, email=person.email, weight=patient.weight, height=patient.height,
                            bloodType = patient.bloodType)
+
+# Update Patient information in the Patient's Dashboard
 @app.route('/update_patient', methods=['GET', 'POST'])
 @login_required
 def update_patient():
@@ -140,6 +145,7 @@ def update_patient():
             flash(f"Error updating patient information: {str(e)}", "danger")
     return render_template('update_patient.html', name=current_user.userName, form=form)
 
+# Route to the Manager Dashboard
 @app.route('/dashboard_managers')
 @login_required
 def dashboard_managers():
@@ -148,6 +154,7 @@ def dashboard_managers():
                            lastName=person.lastName, firstName=person.firstName, gender=person.gender, dob=person.dateOfBirth,
                            address=person.address, phone=person.phone, email=person.email)
 
+# Route to the Patient Login Page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -172,6 +179,7 @@ def login():
             flash('Invalid username or password!', 'danger')
     return render_template('login.html', form=form)
 
+# Route to the Manager Login Page
 @app.route('/login_manager', methods=['GET', 'POST'])
 def login_manager():
     form = LoginForm()
@@ -194,6 +202,7 @@ def login_manager():
 
     return render_template('login_manager.html', form=form)
 
+# Logout route. When an user logs out, the system will take the user to the index page
 @app.route('/logout')
 @login_required
 def logout():
@@ -201,6 +210,7 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
+# A patient adds a new appointment to his/her appointment's list
 @login_required
 @app.route('/new_appointment', methods=['GET', 'POST'])
 def new_appointment():
@@ -254,7 +264,7 @@ def new_appointment():
 
     return render_template('new_appointment.html', form=form, name=current_user.userName)
 
-# View and schedule appointments
+# Managers view and schedule appointments for a specific patient
 @login_required
 @app.route('/patientDetails/<int:patient_id>', methods=['GET', 'POST'])
 def patientDetails(patient_id):
@@ -308,7 +318,7 @@ def patientDetails(patient_id):
         return redirect(url_for('patientDetails', patient_id=patient.patientID))
     return render_template('patientDetails.html', patient=patient, form=form, name=current_user.userName, appointments=all_appointments)
 
-# View and schedule appointments
+# Managers modify a given patient information, including mark the Patient as Inactive
 @login_required
 @app.route('/modifyPatientDetails/<int:patient_id>', methods=['GET', 'POST'])
 def modifyPatientDetails(patient_id):
@@ -357,7 +367,7 @@ def modifyPatientDetails(patient_id):
             flash(f"Error updating patient information: {str(e)}", "danger")
     return render_template('updatePatientManager.html', patient=patient, form=form, name=current_user.userName)
 
-
+# Patient self-registration
 @app.route('/new_patient', methods=['GET', 'POST'])
 def new_patient():
     form = PatientForm()
@@ -394,6 +404,7 @@ def new_patient():
 
     return render_template('new_patient.html', form=form)
 
+# New patient added by a manager
 @app.route('/new_patient_manager', methods=['GET', 'POST'])
 @login_required
 def new_patient_manager():
@@ -431,6 +442,7 @@ def new_patient_manager():
 
     return render_template('new_patient_manager.html', form=form, name=current_user.userName)
 
+# An Office added by another Office Manager
 @app.route('/add_officeManager', methods=['GET', 'POST'])
 @login_required
 def add_officeManager():
@@ -464,6 +476,7 @@ def add_officeManager():
 
     return render_template('add_officeManager.html', form=form, name=current_user.userName)
 
+# Office Clerk added by an Office Manager
 @app.route('/add_officeClerk', methods=['GET', 'POST'])
 @login_required
 def add_officeClerk():
@@ -497,6 +510,7 @@ def add_officeClerk():
 
     return render_template('add_officeClerk.html', form=form, name=current_user.userName)
 
+# Doctor added by an Office Manager
 @app.route('/add_doctor', methods=['GET', 'POST'])
 @login_required
 def add_doctor():
@@ -532,7 +546,7 @@ def add_doctor():
 
     return render_template('new_doctor.html', form=form, name=current_user.userName)
 
-# Search Patient by ID Number
+# Search Patient by ID Number, so that an Office Manager can schedule a new appointment for a give patient
 @app.route('/search', methods=['GET'])
 @login_required
 def search():
@@ -546,6 +560,7 @@ def search():
                 return render_template('patientResults.html', patient=patient, query=query, name=current_user.userName)
     return render_template('searchPatient.html', patients=[], query=query, name=current_user.userName)
 
+# Search Patient by ID Number, so that an Office Manager can modify and mark a given patient as Inactive
 @app.route('/searchPatient', methods=['GET'])
 @login_required
 def searchPatient():
@@ -559,7 +574,7 @@ def searchPatient():
                 return render_template('modifyPatientResults.html', patient=patient, query=query, name=current_user.userName)
     return render_template('searchPatientManager.html', patients=[], query=query, name=current_user.userName)
 
-# Search Appointment by Patient
+# Managers search a specific Appointment by providing Date, Time, and Patient ID, so that the appointment can be re-scheduled or canceled
 @app.route('/searchAppointmentByManager', methods=["GET", "POST"])
 @login_required
 def searchAppointmentByManager():
@@ -585,6 +600,7 @@ def searchAppointmentByManager():
         results = all_appointments.first()
     return render_template("searchAppointmentByManager.html", form=form, appointment=results, name=current_user.userName)
 
+# Patients search a specific Appointment by providing Date and Time, so that the appointment can be re-scheduled or canceled
 @app.route('/search_appointment', methods=["GET", "POST"])
 @login_required
 def search_appointment():
@@ -609,7 +625,7 @@ def search_appointment():
         results = all_appointments.first()
     return render_template("searchAppointment.html", form=form, appointment=results, name=current_user.userName)
 
-# View and reschedule appointments
+# Patient re-schedule or cancel a given appointment
 @login_required
 @app.route('/appointmentDetails/<int:appointment_id>', methods=['GET', 'POST'])
 def appointmentDetails(appointment_id):
@@ -732,6 +748,7 @@ def appointmentDetailsManager(appointment_id):
             flash(f"Error updating appointment information: {str(e)}", "danger")
     return render_template('appointmentDetailsManager.html', appointment=appointment, form=form, name=current_user.userName)
 
+# Patient cancel a given appointment
 @login_required
 @app.route('/deleteAppointment/<int:appointment_id>', methods=['GET', 'POST'])
 def deleteAppointment(appointment_id):
@@ -769,6 +786,7 @@ def deleteAppointment(appointment_id):
         flash(f"Error deleting appointment information: {str(e)}", "danger")
     return redirect(url_for('dashboard', name=current_user.userName))
 
+# Managers cancel a given appointment for a specific patient
 @login_required
 @app.route('/deleteAppointmentManager/<int:appointment_id>', methods=['GET', 'POST'])
 def deleteAppointmentManager(appointment_id):
@@ -806,6 +824,7 @@ def deleteAppointmentManager(appointment_id):
         flash(f"Error deleting appointment information: {str(e)}", "danger")
     return redirect(url_for('patientDetails', patient_id=appointment.patient.patientID))
 
+# Manager can run a report and filter appointments by providing start and end date
 @app.route("/filter_appointments", methods=["GET", "POST"])
 def filter_appointments():
     form = DateRangeForm()
