@@ -119,6 +119,12 @@ class SearchAppointmentForm(FlaskForm):
     appointmentTime = TimeField("Appointment Time", render_kw={"autocomplete": "off"}, format='%H:%M', validators=[DataRequired()])
     submit = SubmitField("Search Appointment")
 
+class SearchAppointmentByManagerForm(FlaskForm):
+    patientID = StringField("Patient's ID Number", render_kw={"autocomplete": "off", "placeholder": "Enter ID Number"}, validators=[DataRequired()])
+    appointmentDate = StringField('Appointment Date', render_kw={"autocomplete": "off"}, widget=DateInput(), validators=[DataRequired()])
+    appointmentTime = TimeField("Appointment Time", render_kw={"autocomplete": "off"}, format='%H:%M', validators=[DataRequired()])
+    submit = SubmitField("Search Appointment")
+
 class DateRangeForm(FlaskForm):
     start_date = DateField("Start Date", validators=[DataRequired()])
     end_date = DateField("End Date", validators=[DataRequired()])

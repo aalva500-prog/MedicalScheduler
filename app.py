@@ -3,7 +3,8 @@ from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
 from models import db, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment
 from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, \
-    AppointmentManagerForm, UpdatePatientForm, SearchAppointmentForm, RescheduleAppointmentForm, DateRangeForm
+    AppointmentManagerForm, UpdatePatientForm, SearchAppointmentForm, RescheduleAppointmentForm, DateRangeForm, \
+    SearchAppointmentByManagerForm
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 
@@ -24,8 +25,8 @@ app.config["MAIL_PASSWORD"] = "sglk hfnr bkkp bkey"
 mail = Mail(app)
 
 @login_manager.user_loader
-def load_user(personID):
-    return Person.query.get(int(personID))
+def load_user(id):
+    return Person.query.get(int(id))
 
 @app.before_request
 def create_tables():
@@ -493,6 +494,32 @@ def search():
                 return render_template('patientResults.html', patient=patient, query=query, name=current_user.userName)
     return render_template('searchPatient.html', patients=[], query=query, name=current_user.userName)
 
+# Search Appointment by Patient
+@app.route('/searchAppointmentByManager', methods=["GET", "POST"])
+@login_required
+def searchAppointmentByManager():
+    form = SearchAppointmentByManagerForm()
+    results = None
+
+    if form.validate_on_submit():
+        # Get form data
+        appointment_date = form.appointmentDate.data
+        appointment_time = form.appointmentTime.data
+        person_id = form.patientID.data
+
+        # Build the query dynamically
+        person = Person.query.filter_by(idNumber=person_id).first()
+        patient = Patient.query.filter_by(personID=person.id).first()
+        all_appointments = Appointment.query.filter_by(patientID=patient.patientID)
+        if appointment_date:
+            all_appointments = all_appointments.filter(Appointment.appointmentDate == appointment_date)
+        if appointment_time:
+            all_appointments = all_appointments.filter(Appointment.appointmentTime == appointment_time)
+
+        # Execute query
+        results = all_appointments.first()
+    return render_template("searchAppointmentByManager.html", form=form, appointment=results, name=current_user.userName)
+
 @app.route('/search_appointment', methods=["GET", "POST"])
 @login_required
 def search_appointment():
@@ -579,6 +606,67 @@ def appointmentDetails(appointment_id):
     return render_template('appointmentDetails.html', appointment=appointment, form=form, name=current_user.userName)
 
 
+# Cancel and reschedule appointments by Managers
+@login_required
+@app.route('/appointmentDetailsManager/<int:appointment_id>', methods=['GET', 'POST'])
+def appointmentDetailsManager(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+
+    form = RescheduleAppointmentForm()
+    person = Person.query.filter_by(idNumber=appointment.patient.person.idNumber).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+
+    # Prepopulate the form with patient data
+    if request.method == "GET":
+        form.appointmentDate.data = appointment.appointmentDate
+        form.appointmentTime.data = appointment.appointmentTime
+        form.appointmentType.data = appointment.appointmentType
+
+    # Process form submission
+    if form.validate_on_submit():
+        # Check if an appointment exists for the same patient and date
+        existing_appointment = Appointment.query.filter_by(
+            patientID=patient.patientID,
+            appointmentDate=form.appointmentDate.data
+        ).first()
+
+        if existing_appointment:
+            flash('ERROR: An appointment for this patient already exists on the selected date!', 'danger')
+            return redirect(url_for('appointmentDetailsManager', appointment_id=appointment.appointmentID))
+
+        appointment.appointmentDate = form.appointmentDate.data
+        appointment.appointmentTime = form.appointmentTime.data
+        appointment.appointmentType = form.appointmentType.data
+
+        # Commit changes to the database
+        try:
+            db.session.commit()
+
+            # Create the email
+            msg = Message(
+                subject="Reschedule Appointment Confirmation",
+                sender="aaapcsolutions@gmail.com",
+                recipients=[person.email]
+            )
+            msg.body = f"Patient Name: {patient.person.firstName} {patient.person.lastName}\nAppointment Type: {appointment.appointmentType}\nAppointment Date: {appointment.appointmentDate}\nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
+
+            # Send the email
+            try:
+                mail.send(msg)
+                flash("Confirmation message sent!\n", "success")
+            except Exception as e:
+                flash(f"Failed to send message: {e}", "danger")
+
+            flash(
+                f"{appointment.appointmentType} appointment has been rescheduled successfully for {appointment.appointmentDate} at {appointment.appointmentTime}!",
+                "success")
+            return redirect(url_for('patientDetails', patient_id=appointment.patient.patientID))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating appointment information: {str(e)}", "danger")
+    return render_template('appointmentDetailsManager.html', appointment=appointment, form=form, name=current_user.userName)
+
 @login_required
 @app.route('/deleteAppointment/<int:appointment_id>', methods=['GET', 'POST'])
 def deleteAppointment(appointment_id):
@@ -615,6 +703,43 @@ def deleteAppointment(appointment_id):
         db.session.rollback()
         flash(f"Error deleting appointment information: {str(e)}", "danger")
     return redirect(url_for('dashboard', name=current_user.userName))
+
+@login_required
+@app.route('/deleteAppointmentManager/<int:appointment_id>', methods=['GET', 'POST'])
+def deleteAppointmentManager(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+
+    person = Person.query.filter_by(idNumber=appointment.patient.person.idNumber).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+
+    # Commit changes to the database
+    try:
+        # Create the email
+        msg = Message(
+            subject="Appointment Cancellation Confirmation",
+            sender="aaapcsolutions@gmail.com",
+            recipients=[person.email]
+        )
+        msg.body = f"Hello,\n\nPlease see details below for the cancelled appointment:\n\nPatient Name: {patient.person.firstName} {patient.person.lastName}\nAppointment Type: {appointment.appointmentType}\nAppointment Date: {appointment.appointmentDate}\nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
+
+        # Send the email
+        try:
+            mail.send(msg)
+            flash("Confirmation message sent!\n", "success")
+        except Exception as e:
+            flash(f"Failed to send message: {e}", "danger")
+
+        flash(
+            f"{appointment.appointmentType} appointment has been canceled successfully for {appointment.appointmentDate} at {appointment.appointmentTime}!",
+            "success")
+
+        db.session.delete(appointment)
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting appointment information: {str(e)}", "danger")
+    return redirect(url_for('patientDetails', patient_id=appointment.patient.patientID))
 
 @app.route("/filter_appointments", methods=["GET", "POST"])
 def filter_appointments():
