@@ -116,6 +116,7 @@
 							<th>Weight (lb)</th>
 							<th>Height (cm)</th>
 							<th>Blood Type</th>
+							<th>Active?</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -132,6 +133,11 @@
 							<td>{{ patient.weight }}</td>
 							<td>{{ patient.height }}</td>
 							<td>{{ patient.bloodType }}</td>
+							{% if patient.isActive %}
+								<td>{{ "Yes" }}</td>
+							{% else %}
+								<td>{{ "No" }}</td>
+							{% endif %}
 						</tr>
 						{% endfor %}
 					</tbody>

@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DateTimeField, SelectField, DateField
 from wtforms.fields.datetime import TimeField
 from wtforms.fields.numeric import FloatField
-from wtforms.fields.simple import PasswordField
+from wtforms.fields.simple import PasswordField, BooleanField
 from wtforms.validators import DataRequired, Email
 from wtforms.widgets import DateInput
 
@@ -129,3 +129,20 @@ class DateRangeForm(FlaskForm):
     start_date = DateField("Start Date", validators=[DataRequired()])
     end_date = DateField("End Date", validators=[DataRequired()])
     submit = SubmitField("View Appointments")
+
+class UpdatePatientManagerForm(FlaskForm):
+    idNumber = StringField("License Number", render_kw={"autocomplete": "off"}, validators=[DataRequired()])
+    firstName = StringField("First Name", render_kw={"autocomplete": "off"}, validators=[DataRequired()])
+    lastName = StringField("Last Name", render_kw={"autocomplete": "off"}, validators=[DataRequired()])
+    genders = [("Male", "Male"), ("Female", "Female")]
+    gender = SelectField("Gender", validators=[DataRequired()], choices=genders)
+    dateOfBirth = StringField('Birthday', render_kw={"autocomplete": "off"}, widget=DateInput(), validators=[DataRequired()])
+    address = StringField("Address", render_kw={"autocomplete": "off"}, validators=[DataRequired()])
+    phone = StringField("Phone Number", render_kw={"autocomplete": "off"}, validators=[DataRequired()])
+    email = StringField("Email", render_kw={"autocomplete": "off"}, validators=[DataRequired(), Email()])
+    weight = FloatField("Weight (lb)", render_kw={"autocomplete": "off"}, validators=[DataRequired()])
+    height = FloatField("Height (cm)", render_kw={"autocomplete": "off"}, validators=[DataRequired()])
+    bloods = [("A+", "A+"), ("A-", "A-"), ("B+", "B+"),("B-", "B-"),("AB+", "AB+"),("AB-", "AB-"),("O+", "O+"),("O-", "O-")]
+    bloodType = SelectField("Blood Type", validators=[DataRequired()], choices=bloods)
+    isActive = BooleanField("Active?")
+    submit = SubmitField("Modify Patient")

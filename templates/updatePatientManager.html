@@ -44,7 +44,7 @@
 
     </head>
     <body>
-	<!-- Header Area -->
+<!-- Header Area -->
 		<header class="header" >
 			<!-- Topbar -->
 			<div class="topbar">
@@ -76,7 +76,7 @@
 							<div class="col-lg-3 col-md-3 col-12">
 								<!-- Start Logo -->
 								<div class="logo">
-									<a href="#"><img src="../static/img/logo.png" alt="#"></a>
+									<a href="{{ url_for('index')}}"><img src="../static/img/logo.png" alt="#"></a>
 								</div>
 								<!-- End Logo -->
 								<!-- Mobile Nav -->
@@ -142,83 +142,87 @@
 			<!--/ End Header Inner -->
 		</header>
 		<!-- End Header Area -->
-<ul>
-	<section class="contact-us section">
-		<div class="container">
-			<div class="inner">
-				<p><strong>Patient Details</strong></p>
-				<!-- Display Flash Messages -->
-				{% with messages = get_flashed_messages() %}
-				  {% if messages %}
-					<ul>
-					  {% for message in messages %}
-						<li style="color: green;">{{ message }}</li>
-					  {% endfor %}
-					</ul>
-				  {% endif %}
-				{% endwith %}
-				<p>--> ID: {{ patient.person.idNumber }}<br>
-				--> Name: {{ patient.person.firstName + " " + patient.person.lastName}}<br>
-				--> DOB: {{ patient.person.dateOfBirth }}</p>
-				<br>
-					<div class="container">
-					<div class="inner">
-						<h5>Patient's Appointments</h5>
-						<br>
-							<table>
-								<thead>
-									<tr>
-										<th>Appointment Date</th>
-										<th>Appointment Time</th>
-										<th>Appointment Type</th>
-										<th>Doctor</th>
-										<th>Specialty</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for appointment in appointments %}
-									<tr>
-										<td>{{appointment.appointmentDate}}</td>
-										<td>{{appointment.appointmentTime}}</td>
-										<td>{{appointment.appointmentType}}</td>
-										<td>{{appointment.doctor.person.firstName + " " + appointment.doctor.person.lastName}}</td>
-										<td>{{appointment.doctor.specialization}}</td>
-									</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-							<!-- Start Add Appointment -->
-					</div>
-			</div>
-				<br>
+<!-- Start Update Patient -->
+		<section class="contact-us section">
 			<div class="container">
 				<div class="inner">
 					<div class="row">
 						<div class="col-lg-6">
 							<div class="contact-us-form">
-								<h4>New Appointment Details</h4>
+								<h2>Update Patient Details</h2>
+								<p>Please change the information below to update your information.</p>
+								 <!-- Display Flash Messages -->
+								{% with messages = get_flashed_messages() %}
+								  {% if messages %}
+									<ul>
+									  {% for message in messages %}
+										<li style="color: green;">{{ message }}</li>
+									  {% endfor %}
+									</ul>
+								  {% endif %}
+								{% endwith %}
 								<!-- Form -->
 								<form class="form" method="POST">
 										{{ form.hidden_tag() }}
 										<div class="row">
 											<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.appointmentDate.label }} {{ form.appointmentDate() }}
+														{{ form.idNumber.label }} {{ form.idNumber() }}
 													</div>
 												</div>
 												<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.appointmentTime.label }} {{ form.appointmentTime() }}
+														{{ form.firstName.label }} {{ form.firstName() }}
 													</div>
 												</div>
 												<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.appointmentType.label }} {{ form.appointmentType() }}
+														{{ form.lastName.label }} {{ form.lastName() }}
 													</div>
 												</div>
 												<div class="col-lg-6">
 													<div class="form-group">
-														{{ form.doctor.label }} {{ form.doctor() }}
+														{{ form.dateOfBirth.label }} {{ form.dateOfBirth() }}
+													</div>
+												</div>
+												<div class="col-lg-12">
+													<div class="form-group">
+														{{ form.address.label }} {{ form.address() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.phone.label }} {{ form.phone() }}
+													</div>
+												</div>
+												<div class="col-lg-10">
+													<div class="form-group">
+														{{ form.email.label }} {{ form.email() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.weight.label }} {{ form.weight() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.height.label }} {{ form.height() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.bloodType.label }} {{ form.bloodType() }}
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.gender.label }} {{ form.gender() }}
+													</div>
+												</div>
+											<div class="col-lg-6">
+													<div class="form-group">
+														{{ form.isActive.label }} {{ form.isActive() }}
 													</div>
 												</div>
 												<div class="col-12">
@@ -234,13 +238,10 @@
 					</div>
 				</div>
 			</div>
-		<!--End Add Appointment -->
-			</div>
-		</div>
-	</section>
-</ul>
+		</section>
+		<!--End Update Patient -->
 
-		<!-- Footer Area -->
+<!-- Footer Area -->
 		<footer id="footer" class="footer ">
 			<!-- Footer Top -->
 			<div class="footer-top">

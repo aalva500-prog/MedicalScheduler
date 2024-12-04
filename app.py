@@ -4,7 +4,7 @@ from config import Config
 from models import db, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment
 from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, \
     AppointmentManagerForm, UpdatePatientForm, SearchAppointmentForm, RescheduleAppointmentForm, DateRangeForm, \
-    SearchAppointmentByManagerForm
+    SearchAppointmentByManagerForm, UpdatePatientManagerForm
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 
@@ -159,12 +159,15 @@ def login():
         user = Person.query.filter_by(userName=userName).first()
         if user:
             patient = Patient.query.filter_by(personID=user.id).first()
-            if patient and user.password == password:
-                login_user(user)  # Create session for the user
-                flash('Login successful!', 'success')
-                return redirect(url_for('dashboard'))
+            if patient and patient.isActive == True:
+                if user.password == password:
+                    login_user(user)  # Create session for the user
+                    flash('Login successful!', 'success')
+                    return redirect(url_for('dashboard'))
+                else:
+                    flash('Invalid username or password!', 'danger')
             else:
-                flash('Invalid username or password!', 'danger')
+                flash('Your account is Inactive. Please contact the Administrator to active your Account!', 'danger')
         else:
             flash('Invalid username or password!', 'danger')
     return render_template('login.html', form=form)
@@ -304,6 +307,55 @@ def patientDetails(patient_id):
             "success")
         return redirect(url_for('patientDetails', patient_id=patient.patientID))
     return render_template('patientDetails.html', patient=patient, form=form, name=current_user.userName, appointments=all_appointments)
+
+# View and schedule appointments
+@login_required
+@app.route('/modifyPatientDetails/<int:patient_id>', methods=['GET', 'POST'])
+def modifyPatientDetails(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+
+    # Create the form
+    form = UpdatePatientManagerForm()
+
+    # Prepopulate the form with patient data
+    if request.method == "GET":
+        form.idNumber.data = patient.person.idNumber
+        form.firstName.data = patient.person.firstName
+        form.lastName.data = patient.person.lastName
+        form.gender.data = patient.person.gender
+        form.dateOfBirth.data = patient.person.dateOfBirth
+        form.address.data = patient.person.address
+        form.phone.data = patient.person.phone
+        form.email.data = patient.person.email
+        form.weight.data = patient.weight
+        form.height.data = patient.height
+        form.bloodType.data = patient.bloodType
+        form.isActive.data = patient.isActive
+
+    # Process form submission
+    if form.validate_on_submit():
+        patient.person.idNumber = form.idNumber.data.upper()
+        patient.person.firstName = form.firstName.data
+        patient.person.lastName = form.lastName.data
+        patient.person.gender = form.gender.data
+        patient.person.dateOfBirth = form.dateOfBirth.data
+        patient.person.address = form.address.data.lower()
+        patient.person.phone = form.phone.data
+        patient.person.email = form.email.data.lower()
+        patient.weight = form.weight.data
+        patient.height = form.height.data
+        patient.bloodType = form.bloodType.data
+        patient.isActive = form.isActive.data
+
+        # Commit changes to the database
+        try:
+            db.session.commit()
+            flash("Patient information updated successfully!", "success")
+            return redirect(url_for('dashboard_managers'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating patient information: {str(e)}", "danger")
+    return render_template('updatePatientManager.html', patient=patient, form=form, name=current_user.userName)
 
 
 @app.route('/new_patient', methods=['GET', 'POST'])
@@ -480,7 +532,7 @@ def add_doctor():
 
     return render_template('new_doctor.html', form=form, name=current_user.userName)
 
-# Search route
+# Search Patient by ID Number
 @app.route('/search', methods=['GET'])
 @login_required
 def search():
@@ -493,6 +545,19 @@ def search():
             if patient:
                 return render_template('patientResults.html', patient=patient, query=query, name=current_user.userName)
     return render_template('searchPatient.html', patients=[], query=query, name=current_user.userName)
+
+@app.route('/searchPatient', methods=['GET'])
+@login_required
+def searchPatient():
+    query = request.args.get('query', '').strip()
+    if query:
+        # Search patients by ID Number
+        person = Person.query.filter_by(idNumber=query).first()
+        if person:
+            patient = Patient.query.filter_by(personID=person.id).first()
+            if patient:
+                return render_template('modifyPatientResults.html', patient=patient, query=query, name=current_user.userName)
+    return render_template('searchPatientManager.html', patients=[], query=query, name=current_user.userName)
 
 # Search Appointment by Patient
 @app.route('/searchAppointmentByManager', methods=["GET", "POST"])
