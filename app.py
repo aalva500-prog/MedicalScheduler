@@ -452,33 +452,36 @@ def new_patient():
 
     if form.validate_on_submit():
 
-        person = Person(
-            idNumber = form.id_number.data.upper(),
-            firstName = form.first_name.data,
-            lastName = form.last_name.data,
-            userName = form.username.data.lower(),
-            password = form.password.data,
-            gender = form.gender.data,
-            dateOfBirth = form.birthday.data,
-            address = form.address.data.lower(),
-            phone = form.phone_number.data,
-            email = form.email.data.lower()
-        )
-        db.session.add(person)
-        db.session.commit()
+        if len(form.password.data) >= 8:
+            person = Person(
+                idNumber = form.id_number.data.upper(),
+                firstName = form.first_name.data,
+                lastName = form.last_name.data,
+                userName = form.username.data.lower(),
+                password = form.password.data,
+                gender = form.gender.data,
+                dateOfBirth = form.birthday.data,
+                address = form.address.data.lower(),
+                phone = form.phone_number.data,
+                email = form.email.data.lower()
+            )
+            db.session.add(person)
+            db.session.commit()
 
-        patient = Patient(
-            weight = form.weight.data,
-            height = form.height.data,
-            bloodType = form.blood.data,
-            isActive = True,
-            personID = person.id
-        )
-        db.session.add(patient)
-        db.session.commit()
+            patient = Patient(
+                weight = form.weight.data,
+                height = form.height.data,
+                bloodType = form.blood.data,
+                isActive = True,
+                personID = person.id
+            )
+            db.session.add(patient)
+            db.session.commit()
 
-        flash("Patient Added successfully!", "success")
-        return redirect(url_for('new_patient'))
+            flash("Patient Added successfully!", "success")
+            return redirect(url_for('new_patient'))
+        else:
+            flash("ERROR: Password length must be greater than 7 characters!", "success")
 
     return render_template('new_patient.html', form=form)
 
@@ -497,33 +500,37 @@ def new_patient_manager():
 
     if form.validate_on_submit():
 
-        person = Person(
-            idNumber = form.id_number.data.upper(),
-            firstName = form.first_name.data,
-            lastName = form.last_name.data,
-            userName = form.username.data.lower(),
-            password = form.password.data,
-            gender = form.gender.data,
-            dateOfBirth = form.birthday.data,
-            address = form.address.data.lower(),
-            phone = form.phone_number.data,
-            email = form.email.data.lower()
-        )
-        db.session.add(person)
-        db.session.commit()
+        if len(form.password.data) >= 8:
 
-        patient = Patient(
-            weight = form.weight.data,
-            height = form.height.data,
-            bloodType = form.blood.data,
-            isActive = True,
-            personID = person.id
-        )
-        db.session.add(patient)
-        db.session.commit()
+            person = Person(
+                idNumber = form.id_number.data.upper(),
+                firstName = form.first_name.data,
+                lastName = form.last_name.data,
+                userName = form.username.data.lower(),
+                password = form.password.data,
+                gender = form.gender.data,
+                dateOfBirth = form.birthday.data,
+                address = form.address.data.lower(),
+                phone = form.phone_number.data,
+                email = form.email.data.lower()
+            )
+            db.session.add(person)
+            db.session.commit()
 
-        flash("Patient Added successfully!", "success")
-        return redirect(url_for('new_patient_manager'))
+            patient = Patient(
+                weight = form.weight.data,
+                height = form.height.data,
+                bloodType = form.blood.data,
+                isActive = True,
+                personID = person.id
+            )
+            db.session.add(patient)
+            db.session.commit()
+
+            flash("Patient Added successfully!", "success")
+            return redirect(url_for('new_patient_manager'))
+        else:
+            flash("ERROR: Password length must be greater than 7 characters!", "success")
 
     return render_template('new_patient_manager.html', form=form, name=current_user.userName)
 
