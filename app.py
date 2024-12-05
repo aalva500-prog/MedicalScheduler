@@ -3,11 +3,12 @@ from flask import Flask, render_template, redirect, url_for, flash, request
 from config import Config
 from models import db, Person, Patient, Doctor, OfficeManager, StaffMember, Appointment
 from forms import AppointmentForm, PatientForm, LoginForm, OfficeManagerForm, DoctorForm, OfficeClerkForm, \
-    AppointmentManagerForm, UpdatePatientForm, SearchAppointmentForm, RescheduleAppointmentForm, DateRangeForm, \
+    UpdatePatientForm, SearchAppointmentForm, RescheduleAppointmentForm, DateRangeForm, \
     SearchAppointmentByManagerForm, UpdatePatientManagerForm
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 import logging
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -29,6 +30,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent access via JavaScript
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Prevent CSRF
 
 mail = Mail(app)
+csrf = CSRFProtect(app) # Cross-Site Request Forgery (CSRF) Protection
 
 
 @login_manager.user_loader
@@ -55,6 +57,11 @@ def index():
 @app.route('/appointments')
 @login_required
 def appointments():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page", "danger")
+        return redirect(url_for('logout'))
     all_appointments = Appointment.query.order_by(Appointment.appointmentDate.desc()).all()
     return render_template('appointments.html', appointments=all_appointments, name=current_user.userName)
 
@@ -64,6 +71,9 @@ def appointments():
 def appointmentsByPatient():
     person = Person.query.filter_by(userName=current_user.userName).first()
     patient = Patient.query.filter_by(personID=person.id).first()
+    if patient is None:
+        flash(f"Error: You don't have access to see this page!", "danger")
+        return redirect(url_for('logout'))
     all_appointments = Appointment.query.filter_by(patientID = patient.patientID).order_by(Appointment.appointmentDate.desc()).all()
     return render_template('appointmentsByPatient.html', appointmentsByPatient=all_appointments, name=current_user.userName)
 
@@ -71,6 +81,11 @@ def appointmentsByPatient():
 @app.route('/patients')
 @login_required
 def patients():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
     all_patients = Patient.query.order_by().all()
     return render_template('patients.html', patients=all_patients, userName=current_user.userName)
 
@@ -78,6 +93,11 @@ def patients():
 @app.route('/clerks')
 @login_required
 def officeClerks():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
     all_clerks = StaffMember.query.all()
     return render_template('officeClerks.html', clerks=all_clerks, userName=current_user.userName)
 
@@ -85,6 +105,11 @@ def officeClerks():
 @app.route('/doctors')
 @login_required
 def doctors():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
     all_doctors = Doctor.query.all()
     return render_template('doctors.html', doctors=all_doctors, userName=current_user.userName)
 
@@ -92,6 +117,11 @@ def doctors():
 @app.route('/officeManagers')
 @login_required
 def officeManagers():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
     all_managers = OfficeManager.query.all()
     return render_template('officeManagers.html', managers=all_managers, name=current_user.userName)
 
@@ -106,6 +136,9 @@ def contact():
 def dashboard():
     person = Person.query.filter_by(userName=current_user.userName).first()
     patient = Patient.query.filter_by(personID=person.id).first()
+    if patient is None:
+        flash(f"Error: You don't have access to see this page!", "danger")
+        return redirect(url_for('logout'))
     return render_template('patient_dashboard.html', userName=current_user.userName, idNumber=person.idNumber,
                            lastName=person.lastName, firstName=person.firstName, gender=person.gender, dob=person.dateOfBirth,
                            address=person.address, phone=person.phone, email=person.email, weight=patient.weight, height=patient.height,
@@ -117,6 +150,11 @@ def dashboard():
 def update_patient():
     person = Person.query.filter_by(userName=current_user.userName).first()
     patient = Patient.query.filter_by(personID=person.id).first()
+
+    if patient is None:
+        flash(f"Error: You don't have access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     # Create the form
     form = UpdatePatientForm()
 
@@ -163,6 +201,10 @@ def update_patient():
 @login_required
 def dashboard_managers():
     person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
     return render_template('manager_dashboard.html', userName=current_user.userName, idNumber=person.idNumber,
                            lastName=person.lastName, firstName=person.firstName, gender=person.gender, dob=person.dateOfBirth,
                            address=person.address, phone=person.phone, email=person.email)
@@ -179,15 +221,18 @@ def login():
         user = Person.query.filter_by(userName=userName).first()
         if user:
             patient = Patient.query.filter_by(personID=user.id).first()
-            if patient and patient.isActive == True:
-                if user.password == password:
-                    login_user(user)  # Create session for the user
-                    flash('Login successful!', 'success')
-                    return redirect(url_for('dashboard'))
+            if patient:
+                if patient.isActive == True:
+                    if user.password == password:
+                        login_user(user)  # Create session for the user
+                        flash('Login successful!', 'success')
+                        return redirect(url_for('dashboard'))
+                    else:
+                        flash('Invalid username or password!', 'danger')
                 else:
-                    flash('Invalid username or password!', 'danger')
+                    flash('Your account is Inactive. Please contact the Administrator to activate your Account!', 'danger')
             else:
-                flash('Your account is Inactive. Please contact the Administrator to active your Account!', 'danger')
+                flash('Invalid username or password!', 'danger')
         else:
             flash('Invalid username or password!', 'danger')
     return render_template('login.html', form=form)
@@ -223,10 +268,17 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# A patient adds a new appointment to his/her appointment's list
-@login_required
+# Patient self-schedules a new appointment
 @app.route('/new_appointment', methods=['GET', 'POST'])
+@login_required
 def new_appointment():
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    patient = Patient.query.filter_by(personID=person.id).first()
+
+    if patient is None:
+        flash(f"Error: You don't have access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = AppointmentForm()
     form.doctor.choices = [(doctor.doctorID, doctor.person.firstName + " " + doctor.person.lastName) for doctor in Doctor.query.all()]
 
@@ -278,9 +330,15 @@ def new_appointment():
     return render_template('new_appointment.html', form=form, name=current_user.userName)
 
 # Managers view and schedule appointments for a specific patient
-@login_required
 @app.route('/patientDetails/<int:patient_id>', methods=['GET', 'POST'])
+@login_required
 def patientDetails(patient_id):
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     patient = Patient.query.get_or_404(patient_id)
 
     form = AppointmentForm()
@@ -316,12 +374,12 @@ def patientDetails(patient_id):
             sender="aaapcsolutions@gmail.com",
             recipients=[patient.person.email]
         )
-        msg.body = f"Patient Name: {patient.person.firstName} {patient.person.lastName}\nAppointment Type: {appointment.appointmentType} \n Appointment Date: {appointment.appointmentDate} \nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
+        msg.body = f"Patient Name: {patient.person.firstName} {patient.person.lastName}\nAppointment Type: {appointment.appointmentType}\n Appointment Date: {appointment.appointmentDate}\nAppointment Time: {appointment.appointmentTime}\n\nThanks & Regards,\nMedical Scheduler Application"
 
         # Send the email
         try:
             mail.send(msg)
-            flash("Please check your email for a confirmation message!\n", "success")
+            flash("Confirmation message sent to patient's email!\n", "success")
         except Exception as e:
             flash(f"Failed to send message: {e}", "danger")
 
@@ -332,9 +390,16 @@ def patientDetails(patient_id):
     return render_template('patientDetails.html', patient=patient, form=form, name=current_user.userName, appointments=all_appointments)
 
 # Managers modify a given patient information, including mark the Patient as Inactive
-@login_required
 @app.route('/modifyPatientDetails/<int:patient_id>', methods=['GET', 'POST'])
+@login_required
 def modifyPatientDetails(patient_id):
+    # Verify if the current user is an Office Manager
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     patient = Patient.query.get_or_404(patient_id)
 
     # Create the form
@@ -421,6 +486,13 @@ def new_patient():
 @app.route('/new_patient_manager', methods=['GET', 'POST'])
 @login_required
 def new_patient_manager():
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = PatientForm()
 
     if form.validate_on_submit():
@@ -459,6 +531,13 @@ def new_patient_manager():
 @app.route('/add_officeManager', methods=['GET', 'POST'])
 @login_required
 def add_officeManager():
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = OfficeManagerForm()
 
     if form.validate_on_submit():
@@ -493,6 +572,13 @@ def add_officeManager():
 @app.route('/add_officeClerk', methods=['GET', 'POST'])
 @login_required
 def add_officeClerk():
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative permissions to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = OfficeClerkForm()
 
     if form.validate_on_submit():
@@ -527,6 +613,13 @@ def add_officeClerk():
 @app.route('/add_doctor', methods=['GET', 'POST'])
 @login_required
 def add_doctor():
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = DoctorForm()
 
     if form.validate_on_submit():
@@ -563,6 +656,13 @@ def add_doctor():
 @app.route('/search', methods=['GET'])
 @login_required
 def search():
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     query = request.args.get('query', '').strip()
     if query:
         # Search patients by ID Number
@@ -577,6 +677,13 @@ def search():
 @app.route('/searchPatient', methods=['GET'])
 @login_required
 def searchPatient():
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     query = request.args.get('query', '').strip()
     if query:
         # Search patients by ID Number
@@ -591,6 +698,13 @@ def searchPatient():
 @app.route('/searchAppointmentByManager', methods=["GET", "POST"])
 @login_required
 def searchAppointmentByManager():
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = SearchAppointmentByManagerForm()
     results = None
 
@@ -617,8 +731,14 @@ def searchAppointmentByManager():
 @app.route('/search_appointment', methods=["GET", "POST"])
 @login_required
 def search_appointment():
+    # Verify if the current user is a patient
     person = Person.query.filter_by(userName=current_user.userName).first()
     patient = Patient.query.filter_by(personID=person.id).first()
+
+    if patient is None:
+        flash(f"Error: You don't have access to this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = SearchAppointmentForm()
     results = None
 
@@ -639,14 +759,20 @@ def search_appointment():
     return render_template("searchAppointment.html", form=form, appointment=results, name=current_user.userName)
 
 # Patient re-schedule or cancel a given appointment
-@login_required
 @app.route('/appointmentDetails/<int:appointment_id>', methods=['GET', 'POST'])
+@login_required
 def appointmentDetails(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
 
     form = RescheduleAppointmentForm()
+
+    # Verify if the current user is a Patient
     person = Person.query.filter_by(userName=current_user.userName).first()
     patient = Patient.query.filter_by(personID=person.id).first()
+
+    if patient is None:
+        flash(f"Error: You don't have access to this page!", "danger")
+        return redirect(url_for('logout'))
 
     # Prepopulate the form with patient data
     if request.method == "GET":
@@ -701,9 +827,16 @@ def appointmentDetails(appointment_id):
 
 
 # Cancel and reschedule appointments by Managers
-@login_required
 @app.route('/appointmentDetailsManager/<int:appointment_id>', methods=['GET', 'POST'])
+@login_required
 def appointmentDetailsManager(appointment_id):
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     appointment = Appointment.query.get_or_404(appointment_id)
 
     form = RescheduleAppointmentForm()
@@ -762,13 +895,18 @@ def appointmentDetailsManager(appointment_id):
     return render_template('appointmentDetailsManager.html', appointment=appointment, form=form, name=current_user.userName)
 
 # Patient cancel a given appointment
-@login_required
 @app.route('/deleteAppointment/<int:appointment_id>', methods=['GET', 'POST'])
+@login_required
 def deleteAppointment(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
 
+    # Verify if the current user is a Patient
     person = Person.query.filter_by(userName=current_user.userName).first()
     patient = Patient.query.filter_by(personID=person.id).first()
+
+    if patient is None:
+        flash(f"Error: You don't have access to this page!", "danger")
+        return redirect(url_for('logout'))
 
     # Commit changes to the database
     try:
@@ -800,9 +938,16 @@ def deleteAppointment(appointment_id):
     return redirect(url_for('dashboard', name=current_user.userName))
 
 # Managers cancel a given appointment for a specific patient
-@login_required
 @app.route('/deleteAppointmentManager/<int:appointment_id>', methods=['GET', 'POST'])
+@login_required
 def deleteAppointmentManager(appointment_id):
+    # Verify if the current user is an Office Manager
+    person1 = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person1.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     appointment = Appointment.query.get_or_404(appointment_id)
 
     person = Person.query.filter_by(idNumber=appointment.patient.person.idNumber).first()
@@ -839,7 +984,15 @@ def deleteAppointmentManager(appointment_id):
 
 # Manager can run a report and filter appointments by providing start and end date
 @app.route("/filter_appointments", methods=["GET", "POST"])
+@login_required
 def filter_appointments():
+    # Verify if the current user is an Office Manager
+    person = Person.query.filter_by(userName=current_user.userName).first()
+    manager = OfficeManager.query.filter_by(personID=person.id).first()
+    if manager is None:
+        flash(f"Error: You don't have administrative access to see this page!", "danger")
+        return redirect(url_for('logout'))
+
     form = DateRangeForm()
     results = None
 
@@ -859,7 +1012,6 @@ def filter_appointments():
             ).order_by(Appointment.appointmentDate.asc()).all()
 
     return render_template("filterAppointments.html", form=form, results=results)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
